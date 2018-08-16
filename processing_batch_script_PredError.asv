@@ -13,7 +13,7 @@
 % MoBILAB
 
 %% START: set Study parameters
-subjects = [2, 6:8];
+subjects = 2; 
 
 %%% Filename and folder structure informations. folders will be created automatically!
 study_folder = 'P:\Project_Sezen\data\';
@@ -729,7 +729,7 @@ for subject = subjects
     
 end
 
-%% STEP K: Create data set for single subject analysis (rerefs original data first)
+%% STEP K: Create data set for single subject analysis
 % by copying the spatial filter information (including dipfit info) into a
 % fresh data set which is just channel-domain interpolated and average
 % referenced, but NOT cleaned in the time domain. No filter is applied yet,
@@ -759,15 +759,12 @@ for subject = subjects
     % load preprocessed, interpolated, average referenced file
     EEG = pop_loadset('filename', interpolated_avRef_filename, 'filepath', input_filepath);
     EEG = eeg_checkset( EEG );
-    % Compute average reference
-    EEG = pop_reref( EEG, []);
     [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, EEG, 0 );
     
     % copy AMICA weights and dipfit info
     bemobil_copy_spatial_filter(EEG, ALLEEG, CURRENTSET, AMICA_EEG, true, false, copy_weights_interpolate_avRef_filename , output_filepath);
     
 end
-
 
 %% STEP L: Epoch Loop
 % makes epochs of the data set specified. Currently this is changed each time, that's not good. Also
@@ -792,12 +789,30 @@ for subject = subjects
     EEG = eeg_checkset( EEG );
     [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, EEG, 0 );
     
+    % add filter
+        
+    % fill eventfields by parsing EEG.event.type string
+    for file = 1:length(EEG.event)
+        if ~strcmp(EEG.event(file).type, 'boundary')
+            current_event = cellstr(strsplit(EEG.event(file).type, ';'));
+            for j = 1:length(current_event)
+                key_val = cellstr(strsplit(current_event{j}, ':'));
+                EEG.event(file).(key_val{1}) = key_val{2};
+            end
+        end
+    end
+
     % change eventfield 'type' to "box:touched" for all touch events
     for file = 1:length(EEG.event)
         if contains(EEG.event(file).type, 'box:spawned')
             EEG.event(file+1).condition = EEG.event(file).condition;
             EEG.event(file+1).normal_or_conflict = EEG.event(file).normal_or_conflict;
             EEG.event(file+1).type = 'box:touched';
+            
+            % TODO BEWARE the below is only for pilot
+            %EEG.event(i).normal_or_conflict = EEG.event(i-1).normal_or_conflict;
+%         else
+%             EEG.event(i) = [];
         end
     end
     
