@@ -1,4 +1,4 @@
-% Specific batch script for Prediction Error Experiment
+%% Specific batch script for Prediction Error Experiment
 % using EEGLAB & MoBILAB & Marius Klug's MoBILAB extensions (https://github.com/MariusKlug/mobilab)
 % and BeMoBIL pipeline functions and experiment specific scripts &
 % functions
@@ -12,126 +12,8 @@
 
 % MoBILAB
 
-%% START: set Study parameters
-subjects = [2, 6:8];
-
-%%% Filename and folder structure informations. folders will be created automatically!
-study_folder = 'P:\Project_Sezen\data\';
-
-% everything from here is according to the general pipeline, changes only recommended if you know
-% the whole structure
-raw_data_folder = '0_raw_data\';
-mobi_data_folder = '1_mobi_data\';
-raw_EEGLAB_data_folder = '2_raw_EEGLAB\';
-spatial_filters_folder = '3_spatial_filters\';
-spatial_filters_folder_AMICA = '3-1_AMICA\';
-single_subject_analysis_folder = '4_single_subject_analysis\';
-single_subject_analysis_folder_ERSPs = 'ERSPs\';
-single_subject_analysis_folder_ERPs = 'ERPs\';
-study_level = '5_study_level\';
-
-single_subject_analysis_folder_epochs_1 = '';
-merged_filename = 'merged_locs_EEG.set';
-interpolated_filename = 'resampled_filtered_interpolated.set';
-segments_filename = 'segments.set';
-FH_cleaning_output_filename = 'filtered_clean.set';
-amica_filename_input = 'resampled_filtered_interpolated_avRef.set';
-amica_filename_output = 'postICA_1.set';
-warped_dipfitted_filename = 'warped_dipfitted.set';
-copy_weights_interpolate_avRef_filename = 'interpolated_avRef_ICA_weights.set';
-
-epochs_filename = 'epochs.set';
-study_1_filename = strcat('predError', single_subject_analysis_folder_epochs_1, '.study');
-
-% mocap data naming
-mocap_data_fname = 'merged_locs_EEG_mocap.set';
-
-% filter frequencies
-filter_lowCutoffFreqAMICA = 1;
-filter_highCutoffFreqAMICA = [];
-lowCutoffFreqERSP_preprocessing = [];
-highCutoffFreqERSP_preprocessing = [];
-lowCutoffFreqERP_preprocessing = 0.2;
-highCutoffFreqERP_preprocessing = 35;
-
-channel_locations_filename = [];
-resample_freq = [];
-
-%%% AMICA
-% what is amica: https://sccn.ucsd.edu/~jason/amica_a.pdf and in general to
-% better understand ICA: http://pressrelease.brainproducts.com/independent-component-analysis-demystified/
-
-% on some PCs AMICA may crash before the first iteration if the number of
-% threads and the amount the data does not suit the algorithm. Jason Palmer
-% has been informed, but no fix so far. just roll with it. if you see the
-% first iteration working there won't be any further crashes. in this case
-% just press "close program" or the like and the bemobil_spatial_filter
-% algorithm will AUTOMATICALLY reduce the number of threads and start AMICA
-% again. this way you will always have the maximum number
-% of threads that should be used for AMICA. check in the
-% task manager how many threads you have theoretically available and think
-% how much computing power you want to devote for AMICA. on the bpn-s1
-% server, 12 is half of the capacity and can be used. be sure to check with
-% either Ole or your supervisor and also check the CPU usage in the task
-% manager before!
-% 4 threads are most effective for single subject speed, more threads don't
-% really shorten the calculation time much. best efficiency is using just 1
-% thread and have as many matlab instances open as possible (limited by the
-% CPU usage). Remember your RAM limit in this case.
-max_threads = 4;
-num_models = 1;
-
-% warp electrodemontage and run dipfit
-RV_threshold = 15;
-remove_outside_head = 'on';
-number_of_dipoles = 1;
-
-% epoching
-epochs_1_boundaries = [-1  2];
-% TODO, this has to be specified and events have to be renamed after event type parsing
-epochs_1_event = {'box:touched'}; 
-
-% study
-STUDY_1_components_to_use = [];
-
-% ERSPs_1
-n_times_1 = 1000;
-trial_normalization_1 = 'off';
-baseline_start_end_1 = [-1 0];
-
-% fft options
-fft_cycles = [3 0.5];
-fft_freqrange = [3 100];
-fft_padratio = 2;
-fft_freqscale = 'log';
-fft_alpha = NaN;
-fft_powbase = NaN;
-fft_c_type   = 'ersp'; % 'itc' 'both'
-n_freqs = 98;
-
-% .icaersp file options
-savetrials_icaersp = 'off';
-parameters_icaersp = { 'cycles', fft_cycles, 'padratio', fft_padratio, 'alpha', fft_alpha, 'freqscale', fft_freqscale};
-prefix_icaersp = 'comp';
-experiment_conditions_to_test_icaersp = [];
-design_name_icaersp = 'design1';
-
-% precluster
-STUDY_1_clustering_weights = struct('dipoles', 6, 'scalp_topographies', 0, 'spectra', 1, 'ERSPs', 3);
-STUDY_1_clustering_freqrange = [3 100];
-
-% repeated clustering, TODO set Talairach of peak interest
-outlier_sigma = 3;
-STUDY_1_n_clust = 50;
-n_iterations = 10000;
-STUDY_1_cluster_ROI_talairach = struct('x', 0, 'y', -45, 'z', 10);
-STUDY_1_quality_measure_weights = [2,-3,-1,-1,-3,-1];
-do_clustering = true;
-do_multivariate_data = true;
-STUDY_1_filepath_clustering_solutions = '\clustering_solutions\box_touch\';
-filename_clustering_solutions = 'solutions';
-filepath_multivariate_data = '';
-filename_multivariate_data = 'multivariate_data';
+% START: set Study parameters
+study_params_PredError;
 
 %% STEP A: MoBILAB import loop
 % what is mobilab? https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3942646/
@@ -369,7 +251,7 @@ for subject = subjects
     end
 end
 
-%% STEP D2 Merge all datasets
+%% STEP E: Merge all datasets & add channel Locations
 % This merges all EEG data files into one big file
 
 input_path = [study_folder raw_EEGLAB_data_folder];
@@ -385,7 +267,7 @@ for subject = subjects
     output_filepath = [output_path num2str(subject)];
     fnames = dir([input_path '\' num2str(subject)]);
     for i=1:length(fnames)
-        if ~contains(fnames(i).name, '_EEG.set')
+        if ~contains(fnames(i).name, '_EEG.set') || contains(fnames(i).name, 'Training') || contains(fnames(i).name, 'EMS')
             fnames(i).name = [];
         end
     end
@@ -409,7 +291,7 @@ for subject = subjects
     
 end
 
-%% STEP E: Resampling, Channel rejection, high-pass filter and interpolation of channels
+%% STEP F: Resampling, Channel rejection, high-pass filter and interpolation of channels
 % Done manually in this case, but you can replace this loop with a loop
 % that uses automatic cleaning!
 % @Sezen: Mike X. Cohen, Part II, 7: Preprocessing
@@ -471,7 +353,7 @@ end
 
 disp('Channel based cleaning and interpolation done!')
 
-%% STEP F: Remove segments of non-experiment data
+%% STEP G: Remove segments of non-experiment data
 % now, reject data not in experiment condition, i.e. between blocks,
 % before and after starting the experiment
 
@@ -490,29 +372,32 @@ for subject = subjects
     
     STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
     
-    EEG = pop_loadset('filename', merged_filename, 'filepath', input_filepath);
+    EEG = pop_loadset('filename', interpolated_filename, 'filepath', input_filepath);
     EEG = eeg_checkset( EEG );
     [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, EEG, 0 );
     
-    parsedEvents = parse_events_PredError(oriEEG);
-
+    EEG = parse_events_PredError(EEG);
+    
+    % extract data between first spawn and last touch
     trials_spawn = [1 101 201];
-    ind_spawn = find(strcmp('spawned', {parsedEvents.event.box}));
+    ind_spawn = find(strcmp('spawned', {EEG.event.box}));
     trials_touch = [100 200 300];
-    ind_touch = find(strcmp('touched', {parsedEvents.event.box}));
+    ind_touch = find(strcmp('touched', {EEG.event.box}));
+    starts = [];
+    ends = [];
 
     for i = 1:length(trials_spawn)
-        ind_tr = find(strcmp(num2str(trials_spawn(i)) ,{parsedEvents.event.trial_nr}));
-        starts(i) = intersect(ind_spawn, ind_tr);
+        ind_tr = find(strcmp(num2str(trials_spawn(i)) ,{EEG.event.trial_nr}));
+        starts = [starts intersect(ind_spawn, ind_tr)]; 
 
-        ind_tr = find(strcmp(num2str(trials_touch(i)) ,{parsedEvents.event.trial_nr}));
-        ends(i) = intersect(ind_touch, ind_tr);
+        ind_tr = find(strcmp(num2str(trials_touch(i)) ,{EEG.event.trial_nr}));
+        ends = [ends intersect(ind_touch, ind_tr)];
     end
     out_dat_tmp = sort([starts, ends]);
     for i = 1:length(out_dat_tmp)
-        out_dat(i) = parsedEvents.event(out_dat_tmp(i)).latency;
+        out_dat(i) = EEG.event(out_dat_tmp(i)).latency;
     end
-    out_dat = [1, out_dat, parsedEvents.pnts];
+    out_dat = [1, out_dat, EEG.pnts];
     out_dat = reshape(out_dat, [2,length(starts)+1])';
 
     EEG = eeg_eegrej(EEG, out_dat);
@@ -543,7 +428,7 @@ for subject = subjects
     
     STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
     
-    oriEEG = pop_loadset('filename', segments_filename, 'filepath', input_filepath);
+    oriEEG = pop_loadset('filename', interpolated_filename, 'filepath', input_filepath);
     oriEEG = eeg_checkset( oriEEG );
     
     %%% specify folder names
@@ -552,7 +437,7 @@ for subject = subjects
     datapath_specifications.datapath_save_figures=output_filepath;   %%% keep last \; path for saving figures of cleaning
 
     %%% specify file names
-    filename_specifications.file_name_original_EEG=segments_filename;   %%% loads "fresh" EEG (raw, unfiltered)
+    filename_specifications.file_name_original_EEG=interpolated_filename;   %%% loads "fresh" EEG (raw, unfiltered)
     filename_specifications.filename_saveBadEpochIndices='';  
 
     automatic_cleaning_settings.cleaned_data_type='sensor data'; %%% ICA not implemented yet; usually bad segments found on sensor level are also fine for IC later on
@@ -598,7 +483,7 @@ end
 % Use average reference in this case, but can be something else, if
 % desired!
 
-input_path = [study_folder raw_EEGLAB_data_folder '\'];
+input_path = [study_folder spatial_filters_folder spatial_filters_folder_AMICA '\'];
 output_path = input_path;
 
 if ~exist('ALLEEG','var'); eeglab; end
@@ -682,7 +567,7 @@ for subject = subjects
     
     STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
     
-    EEG = pop_loadset('filename', FH_cleaning_output_filename , 'filepath', input_filepath);
+    EEG = pop_loadset('filename', amica_filename_input , 'filepath', input_filepath);
     [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 0,'study',0);
     
     % reject data from previously computed FH channel data rejection
@@ -691,7 +576,11 @@ for subject = subjects
     
     % rank of the data set is reduced by 1, because of average reference,
     % and then reduced by the number of interpolated channels
-    rank = EEG.nbchan - 1 - length(EEG.etc.interpolated_channels);
+    if isfield(EEG.etc, 'interpolated_channels')
+        rank = EEG.nbchan - 1 - length(EEG.etc.interpolated_channels);
+    else
+        rank = EEG.nbchan - 1;
+    end
     
     % running signal decomposition with values specified above
     [ALLEEG EEG CURRENTSET] = bemobil_signal_decomposition(ALLEEG, EEG, ...
@@ -729,7 +618,7 @@ for subject = subjects
     
 end
 
-%% STEP K: Create data set for single subject analysis (rerefs original data first)
+%% STEP K: Create 1st Level data sets, rerefs original data first & parses events
 % by copying the spatial filter information (including dipfit info) into a
 % fresh data set which is just channel-domain interpolated and average
 % referenced, but NOT cleaned in the time domain. No filter is applied yet,
@@ -761,13 +650,14 @@ for subject = subjects
     EEG = eeg_checkset( EEG );
     % Compute average reference
     EEG = pop_reref( EEG, []);
+    % parse events
+    EEG = parse_events_PredError(EEG);    
     [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, EEG, 0 );
     
     % copy AMICA weights and dipfit info
     bemobil_copy_spatial_filter(EEG, ALLEEG, CURRENTSET, AMICA_EEG, true, false, copy_weights_interpolate_avRef_filename , output_filepath);
     
 end
-
 
 %% STEP L: Epoch Loop
 % makes epochs of the data set specified. Currently this is changed each time, that's not good. Also
@@ -792,15 +682,6 @@ for subject = subjects
     EEG = eeg_checkset( EEG );
     [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, EEG, 0 );
     
-    % change eventfield 'type' to "box:touched" for all touch events
-    for file = 1:length(EEG.event)
-        if contains(EEG.event(file).type, 'box:spawned')
-            EEG.event(file+1).condition = EEG.event(file).condition;
-            EEG.event(file+1).normal_or_conflict = EEG.event(file).normal_or_conflict;
-            EEG.event(file+1).type = 'box:touched';
-        end
-    end
-    
     [EEG, created_epochs_indices] = pop_epoch( EEG, epochs_1_event, epochs_1_boundaries, 'newname',...
         'epochs', 'epochinfo', 'yes');
     [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'savenew',[output_filepath '\' epochs_filename],'gui','off');
@@ -817,16 +698,7 @@ for subject = subjects
     
 end
 
-
-%% export Reaction for a single loaded EEG set in eeglab GUI
-
-for file = 1:length(EEG.epoch)
-    rt(file) = EEG.epoch(file).eventreaction_time(1);
-end
-rt = str2double(rt)';
-xlsxwrite('rt_out', rt);
-
-%% STEP M: epoch cleaning
+%% STEP M: Epoch cleaning
 % Status 04/07/2018: 
 
 input_path = [study_folder single_subject_analysis_folder single_subject_analysis_folder_ERSPs single_subject_analysis_folder_epochs_1];
@@ -884,38 +756,7 @@ for subject = subjects
     close(gcf);
 end
 
-%% STEP N: Safety checks data quality
-
-input_path = [study_folder single_subject_analysis_folder];
-output_path = [study_folder single_subject_analysis_folder];
-
-for subject = subjects
-    disp(['Subject #' num2str(subject)]);
-    
-    input_filepath = [input_path num2str(subject)];
-    output_filepath = [output_path num2str(subject)];
-    
-    STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
-    
-    EEG = pop_loadset('filename', copy_weights_interpolate_avRef_filename, 'filepath', input_filepath);
-    EEG = eeg_checkset( EEG );
-    [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, EEG, 0 );
-    
-    % check all single subject decompositions (scalp map topographies) and save
-    % the resulting .fig
-    pop_topoplot(EEG,0, [1:size(EEG.icaweights,1)] ,'scalp maps',[8 8] ,0,'electrodes','off');
-    savefig(gcf, [output_filepath 'scalp_map' num2str(subject)]);
-    close(gcf);
-end
-
-%% epoch rejection
-
-% reject bad epochs
-trialrej = zeros(1,length(EEG.epoch));
-trialrej(EEG.etc.auto_epoch_cleaning.indices_bad_epochs) = 1;
-EEG = pop_rejepoch( EEG, trialrej, 0);
-
-%% STEP O: create EEGLAB study structure
+%% STEP N: create EEGLAB study structure (first rejects bad epochs)
 % this is group level analyses specific and comes at the end of the data
 % collection phase
 % Mike X. Cohen: Part VI, Chapter 34, 35
@@ -938,6 +779,11 @@ for subject = subjects
     input_filepath = [input_path num2str(subject)];
     
     EEG = pop_loadset('filename', epochs_filename, 'filepath', input_filepath);
+    % reject bad epochs
+    trialrej = zeros(1,length(EEG.epoch));
+    trialrej(EEG.etc.auto_epoch_cleaning.indices_bad_epochs) = 1;
+    EEG = pop_rejepoch( EEG, trialrej, 0);
+    
     EEG = eeg_checkset( EEG );
     [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, EEG, 0 );
     
@@ -971,7 +817,7 @@ CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 eeglab redraw
 disp('...done')
 
-%% precompute topographies and spectra
+%% STEP O: precompute topographies and spectra
 
 input_path = [study_folder study_level];
 
@@ -1004,7 +850,7 @@ CURRENTSTUDY = 1; EEG = ALLEEG; CURRENTSET = [1:length(EEG)];
 eeglab redraw
 disp('...done')
 
-%% Precluster EEGLAB study
+%% STEP P: Precluster EEGLAB study
 
 input_path = [study_folder study_level];
 
@@ -1031,7 +877,7 @@ end
 [STUDY, ALLEEG, EEG] = bemobil_precluster(STUDY, ALLEEG, EEG, STUDY_1_clustering_weights, STUDY_1_clustering_freqrange,...
     [-1000 2000], study_1_filename, input_path);
 
-%% Repeated clustering EEGLAB study
+%% STEP Q: Repeated clustering EEGLAB study
 
 input_path = [study_folder study_level];
 input_path_latencies = [study_folder single_subject_analysis_folder single_subject_analysis_folder_ERSPs single_subject_analysis_folder_epochs_1];
