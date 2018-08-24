@@ -1,9 +1,9 @@
 % Prediction Error Study parameters and folder structure
-
-subjects = [2, 6:8];
+subjects = [2:11];
 
 %%% Filename and folder structure informations. folders will be created automatically!
 study_folder = 'P:\Project_Sezen\data\';
+eeglab_path = 'M:\Toolboxes_Skripts_and_Coding_examples\eeglab-by-marius\eeglab14_1_0b';
 
 % everything from here is according to the general pipeline, changes only recommended if you know
 % the whole structure
@@ -15,34 +15,29 @@ spatial_filters_folder_AMICA = '3-1_AMICA\';
 single_subject_analysis_folder = '4_single_subject_analysis\';
 single_subject_analysis_folder_ERSPs = 'ERSPs\';
 single_subject_analysis_folder_ERPs = 'ERPs\';
+single_subject_analysis_folder_ERP_images = 'ERP_images\';
 study_level = '5_study_level\';
 
-single_subject_analysis_folder_epochs_1 = '';
-merged_filename = 'merged_locs_EEG.set';
-interpolated_filename = 'resampled_filtered_interpolated.set';
+merged_filename = 'merged_EEG.set';
+interpolated_filename = 'locs_resampled_filtered_interpolated.set';
 segments_filename = 'segments.set';
 FH_cleaning_output_filename = 'filtered_clean.set';
-amica_filename_input = 'resampled_filtered_interpolated_avRef.set';
 amica_filename_output = 'postICA_1.set';
 warped_dipfitted_filename = 'warped_dipfitted.set';
 copy_weights_interpolate_avRef_filename = 'interpolated_avRef_ICA_weights.set';
 
-epochs_filename = 'epochs.set';
-study_1_filename = strcat('predError', single_subject_analysis_folder_epochs_1, '.study');
-
 % mocap data naming
-mocap_data_fname = 'merged_locs_EEG_mocap.set';
+mocap_data_fname = 'merged_EEG_mocap.set';
+
+% data shift in ms, age-of-sample (http://bemobil.bpn.tu-berlin.de/wiki/doku.php?id=software:lsl-test) EEG data
+data_shift = 0.063;
 
 % filter frequencies
 filter_lowCutoffFreqAMICA = 1;
 filter_highCutoffFreqAMICA = [];
-lowCutoffFreqERSP_preprocessing = [];
-highCutoffFreqERSP_preprocessing = [];
-lowCutoffFreqERP_preprocessing = 0.2;
-highCutoffFreqERP_preprocessing = 35;
 
 channel_locations_filename = [];
-resample_freq = [];
+resample_freq = 250;
 
 %%% AMICA
 % what is amica: https://sccn.ucsd.edu/~jason/amica_a.pdf and in general to
@@ -65,57 +60,10 @@ resample_freq = [];
 % really shorten the calculation time much. best efficiency is using just 1
 % thread and have as many matlab instances open as possible (limited by the
 % CPU usage). Remember your RAM limit in this case.
-max_threads = 8;
+max_threads = 12;
 num_models = 1;
 
 % warp electrodemontage and run dipfit
 RV_threshold = 15;
 remove_outside_head = 'on';
 number_of_dipoles = 1;
-
-% epoching
-epochs_1_boundaries = [-1  2];
-% TODO, this has to be specified and events have to be renamed after event type parsing
-epochs_1_event = {'box:touched'}; 
-
-% study
-STUDY_1_components_to_use = [];
-
-% ERSPs_1
-n_times_1 = 1000;
-trial_normalization_1 = 'off';
-baseline_start_end_1 = [-1 0];
-
-% fft options
-fft_cycles = [3 0.5];
-fft_freqrange = [3 100];
-fft_padratio = 2;
-fft_freqscale = 'log';
-fft_alpha = NaN;
-fft_powbase = NaN;
-fft_c_type   = 'ersp'; % 'itc' 'both'
-n_freqs = 98;
-
-% .icaersp file options
-savetrials_icaersp = 'off';
-parameters_icaersp = { 'cycles', fft_cycles, 'padratio', fft_padratio, 'alpha', fft_alpha, 'freqscale', fft_freqscale};
-prefix_icaersp = 'comp';
-experiment_conditions_to_test_icaersp = [];
-design_name_icaersp = 'design1';
-
-% precluster
-STUDY_1_clustering_weights = struct('dipoles', 6, 'scalp_topographies', 0, 'spectra', 1, 'ERSPs', 3);
-STUDY_1_clustering_freqrange = [3 100];
-
-% repeated clustering, TODO set Talairach of peak interest
-outlier_sigma = 3;
-STUDY_1_n_clust = 50;
-n_iterations = 10000;
-STUDY_1_cluster_ROI_talairach = struct('x', 0, 'y', -45, 'z', 10);
-STUDY_1_quality_measure_weights = [2,-3,-1,-1,-3,-1];
-do_clustering = true;
-do_multivariate_data = true;
-STUDY_1_filepath_clustering_solutions = '\clustering_solutions\box_touch\';
-filename_clustering_solutions = 'solutions';
-filepath_multivariate_data = '';
-filename_multivariate_data = 'multivariate_data';
