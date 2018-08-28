@@ -1,5 +1,5 @@
 % Prediction Error Study parameters and folder structure
-subjects = [2:11];
+subjects = 2 %[2:11];
 
 %%% Filename and folder structure informations. folders will be created automatically!
 study_folder = 'P:\Project_Sezen\data\';
@@ -25,9 +25,13 @@ amica_filename_output = 'postICA_1_incl_EMS.set';
 warped_dipfitted_filename = 'warped_dipfitted_incl_EMS.set';
 copy_weights_interpolate_avRef_filename = 'interpolated_avRef_ICA_weights_incl_EMS.set';
 
-% filter frequencies
+% filter frequencies amica
 filter_lowCutoffFreqAMICA = 1;
 filter_highCutoffFreqAMICA = [];
+
+% filter frequencies ERPs
+filter_lowCutoffFreqERP = 0.2;
+filter_highCutoffFreqERP = 35;
 
 channel_locations_filename = [];
 resample_freq = 250;
