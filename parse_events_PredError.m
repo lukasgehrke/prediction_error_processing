@@ -4,34 +4,51 @@ function [ EEG ] = parseEventsPredError( EEG )
 %of the kind "ke1:value1;key2:value2;key3:value3...". This function catches
 %some specifics in the event generation of PredError Experiment Ver1.0 (08/2018)
 
+% delete duplicate events in EMS condition
+for i = 1:length(EEG.event)
+   if strfind(EEG.event(i).type, 'box:touched')
+       first_touch = i;
+       second_touch = [];
+       spawn = [];
+       
+       % find secont touch event occuring before spawn of next trial
+       try
+           for j = 1:100
+               if strfind(EEG.event(i+j).type, 'box:touched')
+                   second_touch = i+j;
+                   break
+               end
+           end
+           
+           for j = 1:100
+               if strfind(EEG.event(i+j).type, 'box:spawned')
+                   spawn = i+j;
+                   break
+               end
+           end
+
+           % if second touch found before next trial, delete first touch
+           % event, use second touch event for parsing, contains EMS info
+           if spawn > second_touch
+               EEG.event(first_touch).type = 'duplicate_event';
+           end
+       end
+   end
+end
+
 for i = 1:length(EEG.event)
     
     current_event = cellstr(strsplit(EEG.event(i).type, ';'));
-    
-    % clean up some mistakes made in writing markers to be automatically
-    % parsed. Catch duplicate box:touched events in conditions vibro and ems
-    % and add to previous touch event
-    if i>1 && strcmp(EEG.event(i-1).type, 'box:touched') && ~strcmp(EEG.event(i-1.).condition, 'visual')
-        idx = i-1;
-    else
-        idx = i;
-    end
 
     % parse all events
-    for j=1:length(current_event)
-        if ~strcmp(current_event{j},'-') && ~strcmp(current_event{j},'boundary')
+    try
+        for j=1:length(current_event)
             key_val = cellstr(strsplit(current_event{j}, ':'));
-            EEG.event(idx).(key_val{1}) = key_val{2};
+            EEG.event(i).(key_val{1}) = key_val{2};
             if j==1
-                EEG.event(idx).type = strcat(key_val{1}, ':', key_val{2});
+                EEG.event(i).type = strcat(key_val{1}, ':', key_val{2});
             end
         end
-    end
-    
-    % mark duplicate events after extracting information
-    if idx == i-1
-        %EEG.event(i) = [];
-        EEG.event(i).type = 'duplicate_event';
     end
     
     % maintain last 'box:spawned' event to overwrite condition param
@@ -39,8 +56,8 @@ for i = 1:length(EEG.event)
         last_spawned = i;
     end
     
-    if isfield(EEG.event(idx), 'emsFeedback') && strcmp(EEG.event(idx).emsFeedback, 'on')
-        EEG.event(idx).condition = 'ems';
+    if isfield(EEG.event(i), 'emsFeedback') && strcmp(EEG.event(i).emsFeedback, 'on')
+        EEG.event(i).condition = 'ems';
         EEG.event(last_spawned).condition = 'ems';
     end
 end

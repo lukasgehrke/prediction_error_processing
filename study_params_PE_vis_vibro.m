@@ -1,5 +1,5 @@
 % Prediction Error Study parameters and folder structure
-subjects = [2:11];
+subjects = [2:16];
 
 %%% Filename and folder structure informations. folders will be created automatically!
 study_folder = 'P:\Project_Sezen\data\';
@@ -60,7 +60,7 @@ resample_freq = 250;
 % really shorten the calculation time much. best efficiency is using just 1
 % thread and have as many matlab instances open as possible (limited by the
 % CPU usage). Remember your RAM limit in this case.
-max_threads = 12;
+max_threads = 4;
 num_models = 1;
 
 % warp electrodemontage and run dipfit

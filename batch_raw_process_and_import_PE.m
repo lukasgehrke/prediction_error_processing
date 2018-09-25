@@ -64,6 +64,18 @@ for subject = subjects
 
             input_filepath = [input_path num2str(subject) '\' fnames(file).name];
             mobilab.allStreams = dataSourceMoBI(input_filepath);
+            
+            for i = 1:100
+                try
+                    if subject==7
+                        mobilab.allStreams.deleteItem(6);
+                    else
+                        mobilab.allStreams.deleteItem(5);
+                    end                    
+                catch
+                    break
+                end
+            end
 
             % find hand and head RBs                
             for i=1:length(mobilab.allStreams.item)
@@ -92,41 +104,44 @@ for subject = subjects
             % 3 time derivatives are calculated (velocity, acceleration, and jerk)
             eulerHand.timeDerivative(3);
             eulerHead.timeDerivative(3);
+            
+            eulerHand.children{1}.createEventsFromMagnitude(3,...
+                'movements','hand_movement:start hand_movement:end',2,0,65,5,200);
                        
-            % ugly, throwout 2 channels repeatedly for 4 channel vel data
-            % because
-            % mobilab.allStreams.item{hand+9}.throwOutChannels(2:3); not
-            % working
-            % TODO redo throwOutChannels with all channels but 1 which is
-            % then overwritten with 3D magnitude
-            mobilab.allStreams.item{hand+9}.throwOutChannels(2);
-            mobilab.allStreams.item{hand+9}.children{1}.throwOutChannels(2);
-            
-            % create event markers based on 3D hand velocity thresholding
-            % get velocity data of hand RB
-            vel = mobilab.allStreams.item{hand+9};
-            vel_xyz_newChannel = sqrt(vel.data(:,1).^2 + vel.data(:,2).^2 + vel.data(:,3).^2);
-            
-            % add channel to the matching length RB stream
-            % not working: vel.addChannels(1, vel_xyz_newChannel);
-            mobilab.allStreams.item{hand+9}.children{1}.children{1}.data(:,1) = vel_xyz_newChannel;
-            
-            % explore velocity data for later parameter selection in
-            % onset/offset detection
-%             figure;histogram(vel_xyz_newChannel);
-%             figure;plot(sort(vel_xyz_newChannel));
-%             prctile(vel_xyz_newChannel, [90:1:100]);
-%             figure;histogram(mobilab.allStreams.item{hand+9}.data(:,1), 20);
-            
-            mobilab.allStreams.item{hand+9}.children{1}.children{1}.createEventsFromMagnitude(1,...
-                'movements','hand_movement:start -',0.7,0,90,3,200);
-            
-            % for head; just exploration, no hypotheses/interest as of yet
-%             head_euler = mobilab.allStreams.item{head+11}.data(:,4);
-%             figure;histogram(abs(head_euler));
-%             figure;plot(sort(abs(head_euler)));
-%             prctile(abs(head_euler), [1:1:100])
-%             figure;histogram(mobilab.allStreams.item{head+9}.data(:,4), 20);
+%             % ugly, throwout 2 channels repeatedly for 4 channel vel data
+%             % because
+%             % mobilab.allStreams.item{hand+9}.throwOutChannels(2:3); not
+%             % working
+%             % TODO redo throwOutChannels with all channels but 1 which is
+%             % then overwritten with 3D magnitude
+%             mobilab.allStreams.item{hand+9}.throwOutChannels(2);
+%             mobilab.allStreams.item{hand+9}.children{1}.throwOutChannels(2);
+%             
+%             % create event markers based on 3D hand velocity thresholding
+%             % get velocity data of hand RB
+%             vel = mobilab.allStreams.item{hand+9};
+%             vel_xyz_newChannel = sqrt(vel.data(:,1).^2 + vel.data(:,2).^2 + vel.data(:,3).^2);
+%             
+%             % add channel to the matching length RB stream
+%             % not working: vel.addChannels(1, vel_xyz_newChannel);
+%             mobilab.allStreams.item{hand+9}.children{1}.children{1}.data(:,1) = vel_xyz_newChannel;
+%             
+%             % explore velocity data for later parameter selection in
+%             % onset/offset detection
+% %             figure;histogram(vel_xyz_newChannel);
+% %             figure;plot(sort(vel_xyz_newChannel));
+% %             prctile(vel_xyz_newChannel, [90:1:100]);
+% %             figure;histogram(mobilab.allStreams.item{hand+9}.data(:,1), 20);
+%             
+%             mobilab.allStreams.item{hand+9}.children{1}.children{1}.createEventsFromMagnitude(1,...
+%                 'movements','hand_movement:start -',0.7,0,90,3,200);
+%             
+%             % for head; just exploration, no hypotheses/interest as of yet
+% %             head_euler = mobilab.allStreams.item{head+11}.data(:,4);
+% %             figure;histogram(abs(head_euler));
+% %             figure;plot(sort(abs(head_euler)));
+% %             prctile(abs(head_euler), [1:1:100])
+% %             figure;histogram(mobilab.allStreams.item{head+9}.data(:,4), 20);
             
             %mobilab.gui
         end
@@ -186,7 +201,6 @@ for subject = subjects
                         hand_dat = i;
                     case 'vel_quat2eul_filt_unflip_rigid_handr_BPN-C043'
                         hand_dat_deriv = i;
-                    case 'throwOut_throwOut_vel_quat2eul_filt_unflip_rigid_handr_BPN-C043'
                         hand_mark = i;
                     case 'quat2eul_filt_unflip_rigid_head_BPN-C043'
                         head_dat = i;
@@ -204,7 +218,6 @@ for subject = subjects
             disp('...done');
         end
     end
-    
 end
 
 %% STEP D: Separating EEG and Mocap loop & correct EEG age_of_sample
@@ -241,6 +254,7 @@ for subject = subjects
             shift = round(data_shift * EEG.srate);
             EEG.data = [EEG.data zeros(size(EEG.data, 1), shift)];
             EEG.data = EEG.data(:,shift+1:end);
+            
             % reject shift buffers and obtain original data set length
             EEG = eeg_eegrej(EEG, [length(EEG.data)-shift length(EEG.data)]);
             [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'setname',[fnames(file).name(1:end-4) '_EEG'],'savenew',[output_filepath fnames(file).name(1:end-4) '_EEG.set'],'gui','off');
@@ -256,6 +270,7 @@ for subject = subjects
         end
     end
 end
+
 
 %% STEP E: Merge all datasets condition Visual and VisualVibro only! 
 % This merges all EEG data files into one big file
@@ -333,9 +348,14 @@ for subject = subjects
         case 2
             removed_chans = [4 16];
         case 3
-            removed_chans = [];
+            removed_chans = [9 10 55 60];
+        case 4
+            removed_chans = [41];
+        case 5
+            removed_chans = [1 33 41 42];
         case 6
             removed_chans = [9 16 43 46 10 14];
+            % also has two frontal electrodes misplaced that need to be switched
             %FC4 only bad after 2600ms, not yet removed
         case 7
             removed_chans = [17 32 49];
@@ -346,8 +366,12 @@ for subject = subjects
         case 10
             removed_chans = [42 45 41 33 17];
         case 11
-            removed_chans = [22]; % idx of channels to be removed
+            removed_chans = [22];
+        case 12
+            removed_chans = [2 22 31 64]; % idx of channels to be removed
     end
+    
+    removed_chans = sort(removed_chans);
     
     % if interested try the below methods for automatic channel rejection
 %     % automatic bad channel rejection

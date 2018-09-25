@@ -1,50 +1,35 @@
-% set Study parameters for ERPs of event: "box:touched"
-study_params_PE_incl_EMS;
+% set study params
+study_params_ERP_box_touched_incl_EMS
 
-% filtering for ERPs
-lowCutoffFreqERP_preprocessing = 0.2;
-highCutoffFreqERP_preprocessing = 30;
+%% (optional) for Albert Chen; Remove selected sources
+% makes epochs of the data set specified. Currently this is changed each time, that's not good. Also
+% experiment-specific event fields are entered in a script where you need to specify some stuff in
+% again. BE AWARE WHAT'S THE CURRENT STATE OF THE OTHER SCRIPT BEFORE STARTING THIS!
 
-% baseline
-baseline = [-600 0];
+input_path = [study_folder single_subject_analysis_folder];
+output_path = [study_folder single_subject_analysis_folder single_subject_analysis_folder_ERPs single_subject_analysis_folder_epochs];
 
-% epoch duration/boundaries
-epochs_boundaries = [-1  2];
-% specified epoching event, must be present in EEG.event.type
-epochs_event = {'box:touched'}; 
+if ~exist('ALLEEG','var'); eeglab; end
+pop_editoptions( 'option_storedisk', 0, 'option_savetwofiles', 1, 'option_saveversion6', 0, 'option_single', 0, 'option_memmapdata', 0, 'option_eegobject', 0, 'option_computeica', 1, 'option_scaleicarms', 1, 'option_rememberfolder', 1, 'option_donotusetoolboxes', 0, 'option_checkversion', 1, 'option_chat', 1);
 
-% filenames and folders
-epochs_filename = 'epochs_incl_EMS.set';
-single_subject_analysis_folder_epochs = 'ERP_box_touched';
-study_filename = strcat('predError_', single_subject_analysis_folder_epochs, '_incl_EMS', '.study');
+for subject = subjects
+    disp(['Subject #' num2str(subject)]);
+    
+    input_filepath = [input_path num2str(subject)];
+    output_filepath = [output_path '\' num2str(subject)];
+    
+    STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
+    
+    EEG = pop_loadset('filename', copy_weights_interpolate_avRef_filename, 'filepath', input_filepath);
+    EEG = eeg_checkset( EEG );
+    [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, EEG, 0 );
+        
+    % reject components
+    EEG = pop_subcomp(EEG, EEG.etc.sasica.components_rejected);
+    pop_saveset(EEG, 'filename', [copy_weights_interpolate_avRef_filename(1:end-4) '_eye_comps_removed'], 'filepath', output_filepath);
+end
 
-% study parameters
-STUDY_components_to_use = [];
-
-% precluster
-STUDY_clustering_weights = struct('dipoles', 6, 'scalp_topographies', 0, 'spectra', 1, 'ERPs', 3);
-STUDY_clustering_freqrange = [3 100];
-
-% repeated clustering, TODO set Talairach of peak interest
-outlier_sigma = 3;
-STUDY_n_clust = 50;
-n_iterations = 10000;
-STUDY_cluster_ROI_talairach = struct('x', 0, 'y', -45, 'z', 10);
-STUDY_quality_measure_weights = [2,-3,-1,-1,-3,-1];
-do_clustering = true;
-do_multivariate_data = true;
-STUDY_filepath_clustering_solutions = '\clustering_solutions\box_touch\';
-filename_clustering_solutions = 'solutions';
-filepath_multivariate_data = '';
-filename_multivariate_data = 'multivariate_data';
-
-%% STEP L:
-% determmine ICA components to reject
-% save to EEG.etc.comps_to_reject
-
-% example s2: EEG.etc.comps_to_reject = [1 2 4 26];
-
-%% STEP M: Remove selected sources & filter & Epoch Loop and correct baseline
+%% STEP M: Remove selected sources & filter & Epoch Loop
 % makes epochs of the data set specified. Currently this is changed each time, that's not good. Also
 % experiment-specific event fields are entered in a script where you need to specify some stuff in
 % again. BE AWARE WHAT'S THE CURRENT STATE OF THE OTHER SCRIPT BEFORE STARTING THIS!
@@ -67,9 +52,44 @@ for subject = subjects
     EEG = eeg_checkset( EEG );
     [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, EEG, 0 );
     
-    % reject components
-    EEG.etc.comps_to_reject = [1 2 4 26];
-    EEG = pop_subcomp(EEG, EEG.etc.comps_to_reject);
+    mkdir(output_filepath);
+    
+    % added marius bemobil weighting plot and save figs of eye, brain and
+    % line noise components
+    % plot and save brain components
+    h = bemobil_plot_patterns(EEG.icawinv,EEG.chanlocs,'weights',EEG.etc.iclabel.ICLabel.classifications(:,1),'minweight',0.5);
+    savefig(h, [output_filepath '\brain_comps']);
+    close(gcf);
+    
+    % plot and save eye components
+    h = bemobil_plot_patterns(EEG.icawinv,EEG.chanlocs,'weights',EEG.etc.iclabel.ICLabel.classifications(:,3),'minweight',0.8);
+    savefig(h, [output_filepath '\eye_comps']);
+    close(gcf);
+    
+    % plot and save line noise components
+    h = bemobil_plot_patterns(EEG.icawinv,EEG.chanlocs,'weights',EEG.etc.iclabel.ICLabel.classifications(:,5),'minweight',0.8);
+    savefig(h, [output_filepath '\linenoise_comps']);
+    close(gcf);
+    
+    % reject components here, does not work on epoched data
+    % SASICA select components to reject
+    %reject_ix = EEG.etc.sasica.components_rejected;
+    
+    % ICLabel (select components to reject)
+    % classes: {'Brain'  'Muscle'  'Eye'  'Heart'  'Line Noise'  'Channel Noise'  'Other'}
+    reject_ix = sort([find((EEG.etc.iclabel.ICLabel.classifications(:,3)) >= .8); ...
+        find((EEG.etc.iclabel.ICLabel.classifications(:,5)) >= .8)]');\
+    
+    % get number, mean, std of rejected IC
+%     for i = 1:length(s)
+%        lens(i) = length(s{i}) 
+%     end
+%     mean(lens)
+%     std(lens)
+    
+    reject_ix_all{subject} = reject_ix;
+    
+    EEG = pop_subcomp(EEG, reject_ix);
     
     % filter
     EEG =  pop_eegfiltnew(EEG, lowCutoffFreqERP_preprocessing, highCutoffFreqERP_preprocessing);
@@ -77,27 +97,13 @@ for subject = subjects
     % epoch
     [EEG, created_epochs_indices] = pop_epoch( EEG, epochs_event, epochs_boundaries, 'newname',...
         'epochs', 'epochinfo', 'yes');
-    
-    % remove baseline
-    EEG = pop_rmbase(EEG, baseline);
-    
+        
     mkdir(output_filepath);
     [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'savenew',[output_filepath '\' epochs_filename],'gui','off');
-     
-%     % event fields are inserted here
-%     [epoch_info, EEG.event] = insert_event_fields_visual_maze(EEG.event, subject);
-%     
-%     % the epoching sometimes doesnt create all epochs due to data set time limits. only the used epochs
-%     % should be in the epoch info struct.
-%     all_epochs_info = epoch_info(created_epochs_indices);
-%     
-%     % save all info about each epoch in a mat file
-%     save([output_filepath '\' epochs_info_filename], 'all_epochs_info')
     
 end
 
-%% STEP N: Epoch cleaning
-% Status 04/07/2018: 
+%% STEP N: Epoch cleaning 
 
 input_path = [study_folder single_subject_analysis_folder single_subject_analysis_folder_ERPs single_subject_analysis_folder_epochs];
 output_path = input_path;
@@ -153,7 +159,6 @@ for subject = subjects
     pop_saveset( oriEEG, 'filename', epochs_filename, 'filepath', output_filepath);
     close(gcf);
 end
-
 
 %% STEP O: create EEGLAB study structure (first rejects bad epochs)
 % this is group level analyses specific and comes at the end of the data
@@ -309,3 +314,4 @@ end
     STUDY_n_clust, n_iterations, STUDY_cluster_ROI_talairach, STUDY_quality_measure_weights, false,...
     false, input_path, study_filename, [input_path full_path_clustering_solutions],...
     filename_clustering_solutions, [input_path full_path_clustering_solutions], filename_multivariate_data);
+

@@ -1,5 +1,5 @@
 % Prediction Error Study parameters and folder structure
-subjects = 2 %[2:11];
+subjects = [2:3 6:8 11:16];
 
 %%% Filename and folder structure informations. folders will be created automatically!
 study_folder = 'P:\Project_Sezen\data\';
@@ -11,7 +11,7 @@ raw_data_folder = '0_raw_data\';
 mobi_data_folder = '1_mobi_data\';
 raw_EEGLAB_data_folder = '2_raw_EEGLAB\';
 spatial_filters_folder = '3_spatial_filters\';
-spatial_filters_folder_AMICA = '3-1_AMICA\';
+spatial_filters_folder_AMICA = '3-1_AMICA_incl_EMS\';
 single_subject_analysis_folder = '4_single_subject_analysis\';
 single_subject_analysis_folder_ERSPs = 'ERSPs\';
 single_subject_analysis_folder_ERPs = 'ERPs\';
@@ -28,10 +28,6 @@ copy_weights_interpolate_avRef_filename = 'interpolated_avRef_ICA_weights_incl_E
 % filter frequencies amica
 filter_lowCutoffFreqAMICA = 1;
 filter_highCutoffFreqAMICA = [];
-
-% filter frequencies ERPs
-filter_lowCutoffFreqERP = 0.2;
-filter_highCutoffFreqERP = 35;
 
 channel_locations_filename = [];
 resample_freq = 250;
@@ -57,10 +53,32 @@ resample_freq = 250;
 % really shorten the calculation time much. best efficiency is using just 1
 % thread and have as many matlab instances open as possible (limited by the
 % CPU usage). Remember your RAM limit in this case.
-max_threads = 12;
+max_threads = 4;
 num_models = 1;
+
+% SASICA settings
+%%% leaving only "true" without specifying subfields will use SASICA default settings
+%%% here: specified settings by MK (experience)
+%%% check field indices: https://github.com/dnacombo/SASICA/issues/7
+SASICA_settings.autocorr.enable=false; %%% "detects noisy components with weak autocorrelation (muscle artifacts usually)"
+SASICA_settings.focalcomp.enable=false; %%% "detects components that are too focal and thus unlikely to correspond to neural activity (bad channel or muscle usually)"
+SASICA_settings.EOGcorr.enable=true; %%% "detects components whose time course correlates with EOG channels"    
+SASICA_settings.EOGcorr.Veogchannames={'Fp1'};
+SASICA_settings.EOGcorr.corthreshV='auto 4';  %%% threshold;
+SASICA_settings.EOGcorr.Heogchannames={'FT10'};
+SASICA_settings.EOGcorr.corthreshH='auto 4';  %%% threshold;
+SASICA_settings.chancorr.enable=false; %%% "detects components whose time course correlates with any channel(s)"
+SASICA_settings.ADJUST.enable=false;  %%% "use ADJUST routines to select components (see Mognon...)" (change later?)
+SASICA_settings.SNR.enable=false;      %%% "detects components with weak signal to noise ratio between arbitrary baseline and interest time windows"
+SASICA_settings.trialfoc.enable=false; 
+SASICA_settings.resvar.enable=false; 
+SASICA_settings.FASTER.enable=false;
+SASICA_settings.MARA.enable=false;
+SASICA_settings.opts.noplot = 1;
 
 % warp electrodemontage and run dipfit
 RV_threshold = 15;
 remove_outside_head = 'on';
 number_of_dipoles = 1;
+
+

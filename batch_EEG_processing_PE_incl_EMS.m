@@ -69,15 +69,21 @@ for subject = subjects
     for i = 1:length(EEG.chanlocs)
         EEG.chanlocs(i).labels = erase(EEG.chanlocs(i).labels, 'brainvision_rda_bpn-c012_');
     end
+    % insert FCz channel
+    EEG=pop_chanedit(EEG, 'insert',64,'changefield',{64 'labels' 'FCz'});
     EEG=pop_chanedit(EEG, 'lookup','P:\\Lukas_Gehrke\\toolboxes\\eeglab\\plugins\\dipfit2.4\\standard_BESA\\standard-10-5-cap385.elp','rplurchanloc');
     EEG = eeg_checkset( EEG );
-        
-    % Todo: do manual channel rejection
+    
+    % Todo: do manual channel rejection, add subjects from vis vibro script
     switch subject
         case 2
             removed_chans = [4 16];
         case 3
-            removed_chans = [];
+            removed_chans = [9 10 55 60];
+        case 4
+            removed_chans = [41];
+        case 5
+            removed_chans = [1 33 41 42];
         case 6
             removed_chans = [9 16 43 46 10 14];
             %FC4 only bad after 2600ms, not yet removed
@@ -90,7 +96,17 @@ for subject = subjects
         case 10
             removed_chans = [42 45 41 33 17];
         case 11
-            removed_chans = [22]; % idx of channels to be removed
+            removed_chans = [22];
+        case 12
+            removed_chans = [2 22 31 64]; % idx of channels to be removed
+        case 13
+            removed_chans = [7, 16, 22, 30, 46, 48];
+        case 14
+            removed_chans = [2, 29, 30, 3, 12];
+        case 15
+            removed_chans = [8, 12, 32, 40, 46, 5, 50];
+        case 16
+            removed_chans = [45, 60, 57, 41, 42, 32, 28, 16];
     end
     
     % if interested try the below methods for automatic channel rejection
@@ -113,7 +129,8 @@ for subject = subjects
     end
     
     % Compute average reference, after adding additional channel for averef
-    EEG = fullRankAveRef( EEG );
+    %EEG = fullRankAveRef( EEG );
+    EEG = pop_reref( EEG, [1:64] ,'refloc',struct('labels',{'FCz'},'type',{'EEG'},'theta',{0},'radius',{0.12662},'X',{32.9279},'Y',{0},'Z',{78.363},'sph_theta',{0},'sph_phi',{67.208},'sph_radius',{85},'urchan',{65},'ref',{''},'datachan',{0}),'keepref','on');
     
     % save dataset
     mkdir(output_filepath); % make sure that folder exists, nothing happens if so
@@ -303,7 +320,7 @@ end
     
 % end
 
-%% STEP J: Create 1st Level data sets
+%% STEP J: Create 1st Level data sets with SASICA & ICLabel ix of bad comps
 % by copying the spatial filter information (including dipfit info) into a
 % fresh data set which is just channel-domain interpolated and average
 % referenced, but NOT cleaned in the time domain. No filter is applied yet,
@@ -325,19 +342,26 @@ for subject = subjects
     
     STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
     
-    % load AMICA file (first file in EEGLAB) including dipole fitting
-     % AMICA_EEG = pop_loadset('filename', warped_dipfitted_filename, 'filepath', spatial_filter_filepath);
-     % AMICA_EEG = eeg_checkset( AMICA_EEG );
-     % [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, AMICA_EEG, 0 );
-    
     % load AMICA file (first file in EEGLAB) NOT including dipole fitting
     AMICA_EEG = pop_loadset('filename', amica_filename_output, 'filepath', spatial_filter_filepath);
     AMICA_EEG = eeg_checkset( AMICA_EEG );
     [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, AMICA_EEG, 0 );
     
+    % Find eye component indices using SASICA 
+    [AMICA_EEG,settings_SASICA] = eeg_SASICA(AMICA_EEG,SASICA_settings);
+    
+    % Classify components using IClabel
+    AMICA_EEG = pop_iclabel(AMICA_EEG); % pop_viewprops( EEG, 0, [1:144], {'freqrange', [2 80]}, {}, 1, 'ICLabel' )
+    
     % load preprocessed, interpolated, average referenced file
     EEG = pop_loadset('filename', interpolated_filename, 'filepath', input_filepath);
     EEG = eeg_checkset( EEG );
+    
+    % add eye comps indeces determined on the AMICA set by SASICA to the
+    % EEG dataset
+    EEG.etc.sasica.components_rejected = find(AMICA_EEG.reject.gcompreject);
+    EEG.etc.sasica.SASICA_settings = SASICA_settings;
+    EEG.etc.iclabel = AMICA_EEG.etc.ic_classification;
     
     % parse events
     EEG = parse_events_PredError(EEG);    
