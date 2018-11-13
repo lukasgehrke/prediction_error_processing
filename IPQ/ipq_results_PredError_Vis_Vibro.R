@@ -7,6 +7,7 @@ nr_of_subjects <- 19
 questions <- rep(c("G1", "SP4", "INV1", "REAL2"), nr_of_subjects)
 ipq$questions <- questions
 
+require(tidyr)
 library(tidyr)
 #ipq_long <- gather(ipq, condition, ipq_score, ems:visual, factor_key=TRUE)
 ipq_long <- gather(ipq, condition, ipq_score, vibro:visual, factor_key=TRUE)
@@ -28,6 +29,7 @@ aggregate(ipq_score ~ condition + questions, ipq_long, mean)
 # 12       ems       SP4  5.181818
 
 # ANOVA
+require(lsr)
 library(lsr)
 fit_ipq_long <- aov(ipq_score ~ condition, data=ipq_long)
 summary(fit_ipq_long)
@@ -37,6 +39,7 @@ etaSquared(fit_ipq_long, type = 2, anova = TRUE)
 # Residuals 0.99580574          NA 205.0454545 129 1.5894996        NA        NA
 
 # significance testing
+require(ggpubr)
 library(ggpubr)
 my_comparisons <- list(c("visual", "vibro"), c("visual", "ems"), c("vibro", "ems"))
 
@@ -49,6 +52,7 @@ xlab_title <- 'feedback condition'
 ipq_long$condition <- factor(ipq_long$condition, levels = rev(levels(ipq_long$condition)))
 ipq_long$subject <- as.factor(ipq_long$subject)
 
+require(ggplot2)
 ipq_all <- ggplot(ipq_long, aes(x = condition,
                                      y = ipq_score, fill = condition, colour = condition, shape = condition)) +
   geom_line(aes(group=subject), colour="grey10", size=.5, alpha=.2) +
@@ -106,7 +110,6 @@ aggregate(ipq_score ~ condition, ipq_single_question, mean)
 # 3       ems  4.636364
 
 # ANOVA
-library(lsr)
 fit_ipq_single_question <- aov(ipq_score ~ condition, data=ipq_single_question)
 summary(fit_ipq_single_question)
 etaSquared(fit_ipq_single_question, type = 2, anova = TRUE)
