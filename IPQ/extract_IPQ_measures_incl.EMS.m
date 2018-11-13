@@ -1,8 +1,7 @@
 %% set Study parameters
-study_params_PE_vis_vibro;
+study_params_PE_incl_EMS;
 
 %% extract IPQ scores and save as .csv
-addpath 'P:\Lukas_Gehrke\toolboxes\utils_LG'
 input_path = [study_folder raw_EEGLAB_data_folder];
 output_filepath = 'P:\Project_Sezen\data_processing\IPQ';
 

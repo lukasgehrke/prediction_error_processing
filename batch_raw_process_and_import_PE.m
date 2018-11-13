@@ -271,7 +271,6 @@ for subject = subjects
     end
 end
 
-
 %% STEP E: Merge all datasets condition Visual and VisualVibro only! 
 % This merges all EEG data files into one big file
 
@@ -340,6 +339,9 @@ for subject = subjects
     for i = 1:length(EEG.chanlocs)
         EEG.chanlocs(i).labels = erase(EEG.chanlocs(i).labels, 'brainvision_rda_bpn-c012_');
     end
+    
+    % insert FCz channel
+    EEG=pop_chanedit(EEG, 'insert',64,'changefield',{64 'labels' 'FCz'});
     EEG=pop_chanedit(EEG, 'lookup','P:\\Lukas_Gehrke\\toolboxes\\eeglab\\plugins\\dipfit2.4\\standard_BESA\\standard-10-5-cap385.elp','rplurchanloc');
     EEG = eeg_checkset( EEG );
         
@@ -369,6 +371,22 @@ for subject = subjects
             removed_chans = [22];
         case 12
             removed_chans = [2 22 31 64]; % idx of channels to be removed
+        case 13
+            removed_chans = [7 16 40 46 48];
+        case 14
+            removed_chans = [2 3 7 16 28];
+        case 15
+            removed_chans = [5 6 12 33 34 46];
+        case 16
+            removed_chans = [28 29 41 45 60];
+        case 17
+            removed_chans = [1 2 3 22 28 36];
+        case 18
+            removed_chans = [15 17 26 30 45];
+        case 19
+            removed_chans = [15 22 26 46 55 59 60];        
+        case 20
+            removed_chans = [2 8 11 36 62];
     end
     
     removed_chans = sort(removed_chans);

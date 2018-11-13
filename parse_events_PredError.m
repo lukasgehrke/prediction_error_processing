@@ -11,7 +11,7 @@ for i = 1:length(EEG.event)
        second_touch = [];
        spawn = [];
        
-       % find secont touch event occuring before spawn of next trial
+       % find second touch event occuring before spawn of next trial
        try
            for j = 1:100
                if strfind(EEG.event(i+j).type, 'box:touched')

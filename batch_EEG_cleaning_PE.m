@@ -28,8 +28,20 @@ for subject = subjects
     
     % extract data between first spawn and last touch
     trials_spawn = [1 101 201];
-    if subject == 3
-        trials_spawn = [1 102 201]; % data collection started after the first trial was completed
+    switch subject 
+        case 3
+            trials_spawn = [1 102 201]; % data collection started after the first trial was completed
+        case 2
+            EEG.event(3476) = [];
+        case 8
+            EEG.event(1141) = [];
+            EEG.event(4043) = [];
+        case 17
+            EEG.event(2876) = [];
+        case 18
+            EEG.event(2458) = [];
+        case 19
+            EEG.event(4205) = [];
     end
     ind_spawn = find(strcmp('spawned', {EEG.event.box}));
     trials_touch = [100 200 300];
@@ -51,6 +63,7 @@ for subject = subjects
     out_dat = [1, out_dat, EEG.pnts];
     out_dat = reshape(out_dat, [2,length(spawns)+1])';
 
+    EEG.event = [];
     EEG = eeg_eegrej(EEG, out_dat);
     pop_saveset( EEG, 'filename', segments_filename, 'filepath', output_filepath);
     clear out_dat
@@ -122,7 +135,7 @@ for subject = subjects
     %%% you open the "wrapper_automatic_cleaning_continuous_EEG" and run each
     %%% section manually, you can save the same figure as .fig (it's just disabled by
     %%% now). Please do not enable it in the wrapper itself! 
-    addpath 'P:\Project_Friederike\2017_spot_rotation\1_analysis\analysis_Matlab_diaries_scripts_releases\3_release_internal_use_only\scripts\'
+    addpath '\\stor1\projects\Project_Friederike\2017_spot_rotation\1_analysis\analysis_Matlab_diaries_scripts_releases\3_release_internal_use_only\scripts\'
     [auto_continuous_cleaning]=wrapper_automatic_cleaning_continuous_EEG(datapath_specifications,filename_specifications,automatic_cleaning_settings);
     
     % copy cleaning results and save dataset
@@ -199,3 +212,91 @@ for subject = subjects
         amica_filename_output, [output_filepath]);
     
 end
+%% STEP K: Create 1st Level data sets
+% by copying the spatial filter information (including dipfit info) into a
+% fresh data set which is just channel-domain interpolated and average
+% referenced, but NOT cleaned in the time domain. No filter is applied yet,
+% do this as needed
+
+input_path = [study_folder raw_EEGLAB_data_folder];
+spatial_filtering_weights_path = [study_folder spatial_filters_folder spatial_filters_folder_AMICA];
+output_path = [study_folder single_subject_analysis_folder];
+
+if ~exist('ALLEEG','var'); eeglab; end
+pop_editoptions( 'option_storedisk', 0, 'option_savetwofiles', 1, 'option_saveversion6', 0, 'option_single', 0, 'option_memmapdata', 0, 'option_eegobject', 0, 'option_computeica', 1, 'option_scaleicarms', 1, 'option_rememberfolder', 1, 'option_donotusetoolboxes', 0, 'option_checkversion', 1, 'option_chat', 1);
+
+for subject = subjects
+    disp(['Subject #' num2str(subject)]);
+    
+    input_filepath = [input_path num2str(subject)];
+    spatial_filter_filepath = [spatial_filtering_weights_path num2str(subject)];
+    output_filepath = [output_path num2str(subject)];
+    
+    STUDY = []; CURRENTSTUDY = 0; ALLEEG = []; EEG=[]; CURRENTSET=[];
+    
+    % load AMICA file (first file in EEGLAB) including dipole fitting
+     % AMICA_EEG = pop_loadset('filename', warped_dipfitted_filename, 'filepath', spatial_filter_filepath);
+     % AMICA_EEG = eeg_checkset( AMICA_EEG );
+     % [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, AMICA_EEG, 0 );
+    
+    % load AMICA file (first file in EEGLAB) NOT including dipole fitting
+    AMICA_EEG = pop_loadset('filename', amica_filename_output, 'filepath', spatial_filter_filepath);
+    AMICA_EEG = eeg_checkset( AMICA_EEG );
+    [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, AMICA_EEG, 0 );
+    
+    % Find eye component indices using SASICA 
+    [AMICA_EEG,settings_SASICA] = eeg_SASICA(AMICA_EEG,SASICA_settings);
+    
+    % Classify components using IClabel
+    AMICA_EEG = pop_iclabel(AMICA_EEG); % pop_viewprops( EEG, 0, [1:144], {'freqrange', [2 80]}, {}, 1, 'ICLabel' )
+    
+    % for manual IC selection:
+    % switch case here for IC selection and rejection
+    %switch subject
+    %    case 2
+    %        eyeICs = [1 2 26]; %26 has some muscle artefacts as well.
+    %    case 3
+    %        eyeICs = []; %the same error message: surface error: not a valid SurfaceCData
+    %    case 4
+    %        eyeICs = [1 2];
+    %    case 5
+    %        eyeICs = [2 5 8 9 12]; %after new ICA, unfortunately the same ICs are generated.
+    %    case 6
+    %        eyeICs = [1 3 4]; %3 and 4 are almost identical
+    %    case 7
+    %        eyeICs = [1 2 3];
+    %    case 8
+    %        eyeICs = [1 2 3];
+    %    case 9
+    %        eyeICs = [1];
+    %    case 10
+    %        eyeICs = [2 5 6]; %5 and 6 are almost identical
+    %    case 11
+    %        eyeICs = [1 2]; %30 ICs only
+    %    case 12
+    %        eyeICs = [1 4 6 8]; % idx of eye components to be removed
+    %end
+    
+    % load preprocessed, interpolated, average referenced file
+    %EEG = pop_loadset('filename', interpolated_filename, 'filepath', input_filepath);
+    %EEG = eeg_checkset( EEG );
+    %EEG.etc.eye_ICs = eyeICs;
+    
+    % load preprocessed, interpolated, average referenced file
+    EEG = pop_loadset('filename', interpolated_filename, 'filepath', input_filepath);
+    EEG = eeg_checkset( EEG );
+    
+    % add eye comps indeces determined on the AMICA set by SASICA to the
+    % EEG dataset
+    EEG.etc.sasica.components_rejected = find(AMICA_EEG.reject.gcompreject);
+    EEG.etc.sasica.SASICA_settings = SASICA_settings;
+    EEG.etc.iclabel = AMICA_EEG.etc.ic_classification;  
+    % parse events
+    EEG = parse_events_PredError(EEG);    
+    [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, EEG, 0 );
+    
+    % copy AMICA weights and NO dipfit info
+    bemobil_copy_spatial_filter(EEG, ALLEEG, CURRENTSET, AMICA_EEG, true, false, copy_weights_interpolate_avRef_filename , output_filepath);
+    
+end
+ 

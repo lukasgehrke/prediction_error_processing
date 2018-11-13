@@ -68,37 +68,53 @@ for subject = subjects
     AMICA_EEG = eeg_checkset( AMICA_EEG );
     [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, AMICA_EEG, 0 );
     
+    % Find eye component indices using SASICA 
+    [AMICA_EEG,settings_SASICA] = eeg_SASICA(AMICA_EEG,SASICA_settings);
+    
+    % Classify components using IClabel
+    AMICA_EEG = pop_iclabel(AMICA_EEG); % pop_viewprops( EEG, 0, [1:144], {'freqrange', [2 80]}, {}, 1, 'ICLabel' )
+    
+    % for manual IC selection:
     % switch case here for IC selection and rejection
-    switch subject
-        case 2
-            eyeICs = [1 2 26]; %26 has some muscle artefacts as well.
-        case 3
-            eyeICs = []; %the same error message: surface error: not a valid SurfaceCData
-        case 4
-            eyeICs = [1 2];
-        case 5
-            eyeICs = [2 5 8 9 12]; %after new ICA, unfortunately the same ICs are generated.
-        case 6
-            eyeICs = [1 3 4]; %3 and 4 are almost identical
-        case 7
-            eyeICs = [1 2 3];
-        case 8
-            eyeICs = [1 2 3];
-        case 9
-            eyeICs = [1];
-        case 10
-            eyeICs = [2 5 6]; %5 and 6 are almost identical
-        case 11
-            eyeICs = [1 2]; %30 ICs only
-        case 12
-            eyeICs = [1 4 6 8]; % idx of eye components to be removed
-    end
+    %switch subject
+    %    case 2
+    %        eyeICs = [1 2 26]; %26 has some muscle artefacts as well.
+    %    case 3
+    %        eyeICs = []; %the same error message: surface error: not a valid SurfaceCData
+    %    case 4
+    %        eyeICs = [1 2];
+    %    case 5
+    %        eyeICs = [2 5 8 9 12]; %after new ICA, unfortunately the same ICs are generated.
+    %    case 6
+    %        eyeICs = [1 3 4]; %3 and 4 are almost identical
+    %    case 7
+    %        eyeICs = [1 2 3];
+    %    case 8
+    %        eyeICs = [1 2 3];
+    %    case 9
+    %        eyeICs = [1];
+    %    case 10
+    %        eyeICs = [2 5 6]; %5 and 6 are almost identical
+    %    case 11
+    %        eyeICs = [1 2]; %30 ICs only
+    %    case 12
+    %        eyeICs = [1 4 6 8]; % idx of eye components to be removed
+    %end
+    
+    % load preprocessed, interpolated, average referenced file
+    %EEG = pop_loadset('filename', interpolated_filename, 'filepath', input_filepath);
+    %EEG = eeg_checkset( EEG );
+    %EEG.etc.eye_ICs = eyeICs;
     
     % load preprocessed, interpolated, average referenced file
     EEG = pop_loadset('filename', interpolated_filename, 'filepath', input_filepath);
     EEG = eeg_checkset( EEG );
-    EEG.etc.eye_ICs = eyeICs;
     
+    % add eye comps indeces determined on the AMICA set by SASICA to the
+    % EEG dataset
+    EEG.etc.sasica.components_rejected = find(AMICA_EEG.reject.gcompreject);
+    EEG.etc.sasica.SASICA_settings = SASICA_settings;
+    EEG.etc.iclabel = AMICA_EEG.etc.ic_classification;  
     % parse events
     EEG = parse_events_PredError(EEG);    
     [ALLEEG, EEG, CURRENTSET] = eeg_store( ALLEEG, EEG, 0 );

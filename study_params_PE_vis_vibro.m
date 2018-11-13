@@ -1,5 +1,5 @@
 % Prediction Error Study parameters and folder structure
-subjects = [2:16];
+subjects = [2:20];
 
 %%% Filename and folder structure informations. folders will be created automatically!
 study_folder = 'P:\Project_Sezen\data\';
@@ -62,6 +62,26 @@ resample_freq = 250;
 % CPU usage). Remember your RAM limit in this case.
 max_threads = 4;
 num_models = 1;
+
+% SASICA settings
+%%% leaving only "true" without specifying subfields will use SASICA default settings
+%%% here: specified settings by MK (experience)
+%%% check field indices: https://github.com/dnacombo/SASICA/issues/7
+SASICA_settings.autocorr.enable=false; %%% "detects noisy components with weak autocorrelation (muscle artifacts usually)"
+SASICA_settings.focalcomp.enable=false; %%% "detects components that are too focal and thus unlikely to correspond to neural activity (bad channel or muscle usually)"
+SASICA_settings.EOGcorr.enable=true; %%% "detects components whose time course correlates with EOG channels"    
+SASICA_settings.EOGcorr.Veogchannames={'Fp1'};
+SASICA_settings.EOGcorr.corthreshV='auto 4';  %%% threshold;
+SASICA_settings.EOGcorr.Heogchannames={'FT10'};
+SASICA_settings.EOGcorr.corthreshH='auto 4';  %%% threshold;
+SASICA_settings.chancorr.enable=false; %%% "detects components whose time course correlates with any channel(s)"
+SASICA_settings.ADJUST.enable=false;  %%% "use ADJUST routines to select components (see Mognon...)" (change later?)
+SASICA_settings.SNR.enable=false;      %%% "detects components with weak signal to noise ratio between arbitrary baseline and interest time windows"
+SASICA_settings.trialfoc.enable=false; 
+SASICA_settings.resvar.enable=false; 
+SASICA_settings.FASTER.enable=false;
+SASICA_settings.MARA.enable=false;
+SASICA_settings.opts.noplot = 1;
 
 % warp electrodemontage and run dipfit
 RV_threshold = 15;
