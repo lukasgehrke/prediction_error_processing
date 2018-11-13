@@ -1,5 +1,5 @@
 % set Study parameters for ERPs of event: "box:touched"
-addpath 'P:\Project_Sezen\data_processing\ERP';
+addpath 'P:\Project_Sezen\data_processing\';
 study_params_PE_vis_vibro;
 
 % filtering for ERPs
@@ -28,7 +28,7 @@ STUDY_clustering_freqrange = [3 100];
 outlier_sigma = 3;
 STUDY_n_clust = 50;
 n_iterations = 10000;
-STUDY_cluster_ROI_talairach = struct('x', 0, 'y', -45, 'z', 10);
+STUDY_cluster_ROI_talairach = struct('x', 0, 'y', -34, 'z', 28);
 STUDY_quality_measure_weights = [2,-3,-1,-1,-3,-1];
 do_clustering = true;
 do_multivariate_data = true;

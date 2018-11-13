@@ -36,99 +36,73 @@ for subject = subjects
     rand_ind_vis = sort(randsample(ind_vis_rej, good_epochs));
     rand_ind_vibro = sort(randsample(ind_vibro_rej, good_epochs));
     
-    % extract vis and vis+vibro condition data, all trials
-    all_trials_vis_vibro{subject}{1} = pop_selectevent(EEG, 'epoch', ind_vis);
-    all_trials_vis_vibro{subject}{2} = pop_selectevent(EEG, 'epoch', ind_vibro);
-    
-    all_trials_vis_vibro_normal{subject}{1} = pop_selectevent(all_trials_vis_vibro{subject}{1}, 'normal_or_conflict', 'normal');
-    all_trials_vis_vibro_conflict{subject}{1} = pop_selectevent(all_trials_vis_vibro{subject}{1}, 'normal_or_conflict', 'conflict');
-    all_trials_vis_vibro_normal{subject}{2} = pop_selectevent(all_trials_vis_vibro{subject}{2}, 'normal_or_conflict', 'normal');
-    all_trials_vis_vibro_conflict{subject}{2} = pop_selectevent(all_trials_vis_vibro{subject}{2}, 'normal_or_conflict', 'conflict');
-    
+%     % extract vis and vis+vibro condition data, all trials
+%     all_trials_vis_vibro{subject}{1} = pop_selectevent(EEG, 'epoch', ind_vis);
+%     all_trials_vis_vibro{subject}{2} = pop_selectevent(EEG, 'epoch', ind_vibro);
+%     
+%     all_trials_vis_vibro_normal{subject}{1} = pop_selectevent(all_trials_vis_vibro{subject}{1}, 'normal_or_conflict', 'normal');
+%     all_trials_vis_vibro_conflict{subject}{1} = pop_selectevent(all_trials_vis_vibro{subject}{1}, 'normal_or_conflict', 'conflict');
+%     all_trials_vis_vibro_normal{subject}{2} = pop_selectevent(all_trials_vis_vibro{subject}{2}, 'normal_or_conflict', 'normal');
+%     all_trials_vis_vibro_conflict{subject}{2} = pop_selectevent(all_trials_vis_vibro{subject}{2}, 'normal_or_conflict', 'conflict');
+     
     % extract each condition data with good epochs from complete dataset
     % index 1 = ems, 2 = vis, 3 = vibro
 %      reduced_all_conds{subject}{1} = pop_selectevent(EEG, 'epoch', rand_ind_ems);
-    reduced_all_conds{subject}{2} = pop_selectevent(EEG, 'epoch', rand_ind_vis);
-    reduced_all_conds{subject}{3} = pop_selectevent(EEG, 'epoch', rand_ind_vibro);
+    reduced_all_conds{subject}{1} = pop_selectevent(EEG, 'epoch', rand_ind_vis);
+    reduced_all_conds{subject}{2} = pop_selectevent(EEG, 'epoch', rand_ind_vibro);
     
     % extract condition data from each condition dataset with good epochs
 %     normal{subject}{1} = pop_selectevent(reduced_all_conds{subject}{1}, 'normal_or_conflict', 'normal');
 %     conflict{subject}{1} = pop_selectevent(reduced_all_conds{subject}{1}, 'normal_or_conflict', 'conflict');
+    normal{subject}{1} = pop_selectevent(reduced_all_conds{subject}{1}, 'normal_or_conflict', 'normal');
+    conflict{subject}{1} = pop_selectevent(reduced_all_conds{subject}{1}, 'normal_or_conflict', 'conflict');
     normal{subject}{2} = pop_selectevent(reduced_all_conds{subject}{2}, 'normal_or_conflict', 'normal');
     conflict{subject}{2} = pop_selectevent(reduced_all_conds{subject}{2}, 'normal_or_conflict', 'conflict');
-    normal{subject}{3} = pop_selectevent(reduced_all_conds{subject}{3}, 'normal_or_conflict', 'normal');
-    conflict{subject}{3} = pop_selectevent(reduced_all_conds{subject}{3}, 'normal_or_conflict', 'conflict');
       
 end
 
 %% plotting
 
+% normal{subject}{1} = normal trials visual
+% normal{subject}{2} = normal trials vibro
+
+% conflict{subject}{1} = conflict trials visual
+% conflict{subject}{2} = conflict trials vibro
+
 chans = {'Fz' 'Cz' 'Pz' 'Oz'};
 
 % 'standard' ERP plotting
 for i = 1:length(chans)
-    % Difference ERP vis+vibro+ems matched number normal trials
-    plot_erp({{normal{2}{1}, normal{3}{1}, normal{4}{1}, normal{5}{1}, normal{6}{1},normal{7}{1},...
-        normal{8}{1}, normal{9}{1}, normal{10}{1}, normal{11}{1}, normal{12}{1},normal{13}{1},...
-        normal{14}{1}, normal{15}{1}, normal{16}{1}, normal{17}{1}, normal{18}{1}, normal{19}{1}},...
-%         {conflict{2}{1}, conflict{3}{1}, conflict{6}{1}, conflict{7}{1},conflict{8}{1}}},...
-%         chans{i}, 'labels', {'Visual+Vibro Normal', 'Visual+Vibro Conflict'}, ...
-%         'plotstd', 'fill', 'plotdiff', 1);
     
-    % Vis, vis+vibro, vis+vibro+ems matched number normal trials
-    plot_erp({{normal{2}{2}, normal{3}{2}, normal{6}{2}, normal{7}{2}, normal{8}{2}},...
-        {normal{2}{3}, normal{3}{3}, normal{6}{3}, normal{7}{3}, normal{8}{3}}}},...
-        chans{i}, 'labels', {'Visual Only', 'Visual+Vibro'}, ...
-        'plotstd', 'fill');
+    %example using only subject 6, normal vs. conflict trials across
+    %feedback conditions
+    plot_erp({{normal{6}{1}, normal{6}{2}}, {conflict{6}{1}, conflict{6}{2}}},...
+    chans{i}, 'labels', {'Visual+Vibro Normal', 'Visual+Vibro Conflict'}, ...
+    'plotstd', 'fill', 'plotdiff', 1);
 
-    % Vis, vis+vibro, vis+vibro+ems matched number conflict trials
-    plot_erp({{conflict{2}{2}, conflict{3}{2}, conflict{6}{2}, conflict{7}{2}, conflict{8}{2}},...
-        {conflict{2}{3}, conflict{3}{3}, conflict{6}{3}, conflict{7}{3}, conflict{8}{3}},...
-        {conflict{2}{1}, conflict{3}{1}, conflict{6}{1}, conflict{7}{1},conflict{8}{1}}},...
-        chans{i}, 'labels', {'Visual Only', 'Visual+Vibro', 'Visual+Vibro+EMS'}, ...
-        'plotstd', 'fill');
-    
-    % plot 2 main condition visual and visual+vibro with both conflict and
-    % normal trials
-    plot_erp({{all_trials_vis_vibro_normal{2}{1}, all_trials_vis_vibro_normal{3}{1}, all_trials_vis_vibro_normal{6}{1}, all_trials_vis_vibro_normal{7}{1}, all_trials_vis_vibro_normal{8}{1}},...
-        {all_trials_vis_vibro_normal{2}{2}, all_trials_vis_vibro_normal{3}{2}, all_trials_vis_vibro_normal{6}{2}, all_trials_vis_vibro_normal{7}{2}, all_trials_vis_vibro_normal{8}{2}},...
-        {all_trials_vis_vibro_conflict{2}{1}, all_trials_vis_vibro_conflict{3}{1}, all_trials_vis_vibro_conflict{6}{1}, all_trials_vis_vibro_conflict{7}{1}, all_trials_vis_vibro_conflict{8}{1}},...
-        {all_trials_vis_vibro_conflict{2}{2}, all_trials_vis_vibro_conflict{3}{2}, all_trials_vis_vibro_conflict{6}{2}, all_trials_vis_vibro_conflict{7}{2}, all_trials_vis_vibro_conflict{8}{2}}},...
-        chans{i}, 'labels', {'Visual Normal', 'Visual+Vibro Normal', 'Visual Conflict', 'Visual+Vibro Conflict'}, ...
-        'plotstd', 'fill');
-    
-    % contrast 2 main condition visual and visual+vibro
-    plot_erp({{all_trials_vis_vibro_conflict{2}{1}, all_trials_vis_vibro_conflict{3}{1}, all_trials_vis_vibro_conflict{6}{1}, all_trials_vis_vibro_conflict{7}{1}, all_trials_vis_vibro_conflict{8}{1}},...
-        {all_trials_vis_vibro_conflict{2}{2}, all_trials_vis_vibro_conflict{3}{2}, all_trials_vis_vibro_conflict{6}{2}, all_trials_vis_vibro_conflict{7}{2}, all_trials_vis_vibro_conflict{8}{2}}},...
-        chans{i}, 'labels', {'Visual Conflict', 'Visual+Vibro Conflict'}, ...
-        'plotstd', 'fill', 'permute', 100);
+    % permutation stats, see Mike X. Cohen book on permutation statistics
+    plot_erp({{normal{6}{1}, normal{6}{2}}, {conflict{6}{1}, conflict{6}{2}}},...
+    chans{i}, 'labels', {'Visual+Vibro Normal', 'Visual+Vibro Conflict'}, ...
+    'plotstd', 'fill', 'plotdiff', 0, 'permute', 200);
+
 end
 
+% for difference ERPs
 % first calculate difference ERP of individually baseline corrected
 % condition ERPs, then plot across conditions
-
 for subject = subjects
     conflict{subject}{1}.data(14,:,:) = conflict{subject}{1}.data(find(strcmp({EEG.chanlocs.labels}, chans{i})),:,:)...
         - mean(normal{subject}{1}.data(find(strcmp({EEG.chanlocs.labels}, chans{i})),:,:),3);
-    conflict{subject}{3}.data(14,:,:) = conflict{subject}{3}.data(find(strcmp({EEG.chanlocs.labels}, chans{i})),:,:)...
-        - mean(normal{subject}{3}.data(find(strcmp({EEG.chanlocs.labels}, chans{i})),:,:),3);
     conflict{subject}{2}.data(14,:,:) = conflict{subject}{2}.data(find(strcmp({EEG.chanlocs.labels}, chans{i})),:,:)...
         - mean(normal{subject}{2}.data(find(strcmp({EEG.chanlocs.labels}, chans{i})),:,:),3);
 end
-% Vis, vis+vibro, vis+vibro+ems first difference within feedback condition 
-plot_erp({{conflict{2}{2}, conflict{3}{2}, conflict{6}{2}, conflict{7}{2}, conflict{8}{2}, conflict{10}{2}, conflict{11}{2}},...
-    {conflict{2}{3}, conflict{3}{3}, conflict{6}{3}, conflict{7}{3}, conflict{8}{3}, conflict{10}{3}, conflict{11}{3}},...
-    {conflict{2}{1}, conflict{3}{1}, conflict{6}{1}, conflict{7}{1}, conflict{8}{1}, conflict{10}{1}, conflict{11}{1}}},...
-    'Cz', 'labels', {'Visual Only', 'Visual+Vibro', 'Visual+Vibro+EMS'}, ...
-    'plotstd', 'fill');
-
 
 % Vis, vis+vibro, vis+vibro+ems first difference within feedback condition 
-plot_erp({{normal{2}{2}, normal{3}{2}, normal{6}{2}, normal{7}{2}, normal{8}{2}, normal{10}{2}, normal{11}{2}},...
-    {normal{2}{3}, normal{3}{3}, normal{6}{3}, normal{7}{3}, normal{8}{3}, normal{10}{3}, normal{11}{3}},...
-    {normal{2}{1}, normal{3}{1}, normal{6}{1}, normal{7}{1}, normal{8}{1}, normal{10}{1}, normal{11}{1}}},...
-    'Cz', 'labels', {'Visual Only', 'Visual+Vibro', 'Visual+Vibro+EMS'}, ...
+plot_erp({{conflict{6}{1}},...
+    {conflict{6}{2}}},...
+    'Cz', 'labels', {'Visual Only', 'Visual+Vibro'}, ...
     'plotstd', 'fill');
+
 
 % TODO make function that computes difference channel between 
 % add data channel containing difference ERP
@@ -137,7 +111,7 @@ EEG.data(end+1,:) = 0;
 EEG.nbchan = size(EEG.data,1);
 if ~isempty(EEG.chanlocs)
     EEG.chanlocs(end+1).label = '';
-end;
+end
 
 % make plot single subject
 single_fig = 1;
@@ -187,5 +161,3 @@ for i = 1:length(chans)
             'plotstd', 'fill', 'newfig', 0);
     end
 end
-
-
