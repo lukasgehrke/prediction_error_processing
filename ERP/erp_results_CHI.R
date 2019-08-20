@@ -1,7 +1,7 @@
 
 # read in csv data
 #erp <- read.csv(file="P:\\Project_Sezen\\data_processing\\ERP\\peaks_locs_ERP_incl_EMS_FCz_95.csv", header=TRUE, sep=";")
-erp <- read.csv(file="P:\\Project_Sezen\\data_processing\\ERP\\peaks_locs_ERP_incl_EMS_FCz_100.csv", header=TRUE, sep=";")
+erp <- read.csv(file="P:\\Project_Sezen\\data_processing\\ERP\\peak_locs_incl_EMS\\peaks_locs_ERP_incl_EMS_FCz_100.csv", header=TRUE, sep=";")
 #erp <- read.csv(file="P:\\Project_Sezen\\data_processing\\ERP\\peaks_locs_ERP_incl_EMS_FCz_105.csv", header=TRUE, sep=";")
 
 nr_of_subjects <- 11
@@ -49,7 +49,7 @@ xlab_title <- 'feedback condition'
 
 # post hoc significance testing
 require(ggpubr)
-my_comparisons <- list(c("visual", "ems"), c("vibro", "ems"))
+my_comparisons <- list(c("visual", "ems"), c("visual", "vibro"), c("vibro", "ems"))
 
 ylab_title <- 'negative peak amplitude (µV)'
 erp_min_peak <- ggplot(erp, aes(x = Condition,

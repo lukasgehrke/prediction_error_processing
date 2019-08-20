@@ -9,7 +9,8 @@
 % Operating System: Microsoft Windows 10 Pro Version 10.0 (Build 17134)
 
 % EEGLAB
-addpath 'M:\Toolboxes_Skripts_and_Coding_examples\eeglab-by-marius\eeglab14_1_0b'
+% addpath 'M:\Toolboxes_Skripts_and_Coding_examples\eeglab-by-marius\eeglab14_1_0b'
+addpath '\\stor1\common\Toolboxes_Skripts_and_Coding_examples\eeglab-by-marius\eeglab14_1_0b'
 eeglab
 
 % MoBILAB
@@ -342,9 +343,10 @@ for subject = subjects
     
     % insert FCz channel
     EEG=pop_chanedit(EEG, 'insert',64,'changefield',{64 'labels' 'FCz'});
-    EEG=pop_chanedit(EEG, 'lookup','P:\\Lukas_Gehrke\\toolboxes\\eeglab\\plugins\\dipfit2.4\\standard_BESA\\standard-10-5-cap385.elp','rplurchanloc');
+%     EEG=pop_chanedit(EEG, 'lookup','P:\\Lukas_Gehrke\\toolboxes\\eeglab\\plugins\\dipfit2.4\\standard_BESA\\standard-10-5-cap385.elp','rplurchanloc');
+    EEG=pop_chanedit(EEG, 'lookup','M:\\Toolboxes_Skripts_and_Coding_examples\\eeglab-by-marius\\eeglab14_1_0b\\plugins\\dipfit2.3\\standard_BESA\\standard-10-5-cap385.elp','rplurchanloc');
     EEG = eeg_checkset( EEG );
-        
+    
     % Todo: do manual channel rejection
     switch subject
         case 2
@@ -411,7 +413,8 @@ for subject = subjects
     end
     
     % Compute average reference, after adding additional channel for averef
-    EEG = fullRankAveRef( EEG );
+    % EEG = fullRankAveRef( EEG );
+    EEG = pop_reref( EEG, [1:64] ,'refloc',struct('labels',{'FCz'},'type',{'EEG'},'theta',{0},'radius',{0.12662},'X',{32.9279},'Y',{0},'Z',{78.363},'sph_theta',{0},'sph_phi',{67.208},'sph_radius',{85},'urchan',{65},'ref',{''},'datachan',{0}),'keepref','on');
     
     % save dataset
     mkdir(output_filepath); % make sure that folder exists, nothing happens if so

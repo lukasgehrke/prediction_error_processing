@@ -1,8 +1,10 @@
 
-nr_of_subjects <- 11
-
+#nr_of_subjects <- 11
+nr_of_subjects <- 19
 # read in csv data ERP
-erp <- read.csv(file="P:\\Project_Sezen\\data_processing\\ERP\\peaks_locs_ERP_incl_EMS_FCz.csv", header=TRUE, sep=";")
+#erp <- read.csv(file="P:\\Project_Sezen\\data_processing\\ERP\\peaks_locs_ERP_incl_EMS_FCz.csv", header=TRUE, sep=";")
+
+erp <- read.csv(file="P:\\Project_Sezen\\data_processing\\ERP\\peak_locs_baseline_250\\peaks_locs_ERP_FCz_100.csv", header=TRUE, sep=";")
 # make factors
 erp$Participant <- as.factor(erp$Participant)
 erp$Condition <- as.factor(erp$Condition)
@@ -10,6 +12,7 @@ erp <- erp[order(erp$Condition),]
 erp
 
 # read in csv data
+#ipq <- read.csv(file="P:\\Project_Sezen\\data_processing\\IPQ\\ipq_long_EMS.csv", header=TRUE, sep=";")
 ipq <- read.csv(file="P:\\Project_Sezen\\data_processing\\IPQ\\ipq_long.csv", header=TRUE, sep=";")
 
 # add factor 
@@ -17,7 +20,8 @@ questions <- rep(c("G1", "SP4", "INV1", "REAL2"), nr_of_subjects)
 ipq$questions <- questions
 
 library(tidyr)
-ipq_long <- gather(ipq, condition, ipq_score, ems:visual, factor_key=TRUE)
+#ipq_long <- gather(ipq, condition, ipq_score, ems:visual, factor_key=TRUE)
+ipq_long <- gather(ipq, condition, ipq_score, vibro:visual, factor_key=TRUE)
 
 # summary and stats
 # remove/revers inv1 item?
@@ -65,7 +69,8 @@ xlab_title <- 'min. peak amplitude (µV)'
 names(df) <- c('participant', 'group', 'condition1', 'condition2')
 
 library(plyr)
-df$group <- revalue(df$group, c("ems"="EMS+Vibro+Visual", "vibro"="Vibro+Visual", "visual"="Visual"))
+#df$group <- revalue(df$group, c("ems"="EMS+Vibro+Visual", "vibro"="Vibro+Visual", "visual"="Visual"))
+df$group <- revalue(df$group, c("vibro"="Vibro+Visual", "visual"="Visual"))
 
 # abline coeffs
 coef(lm(df$condition2 ~ df$condition1))

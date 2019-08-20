@@ -212,6 +212,7 @@ for subject = subjects
         amica_filename_output, [output_filepath]);
     
 end
+
 %% STEP K: Create 1st Level data sets
 % by copying the spatial filter information (including dipfit info) into a
 % fresh data set which is just channel-domain interpolated and average

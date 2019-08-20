@@ -27,75 +27,76 @@ for subject = subjects
     
     EEG = pop_loadset('filename', epochs_filename, 'filepath', input_filepath);
     EEG = eeg_checkset( EEG );
-%     
-%     % remove baseline
-%     EEG = pop_rmbase(EEG, baseline);
-%     
-%     %EEG = pop_eegfiltnew(EEG, low, high);
-% 
-%     % select epochs
-%     bad = EEG.etc.auto_epoch_cleaning.indices_bad_epochs;
-%     ind_ems = find(cellfun(@(x) any(strcmp(x, 'ems')), {EEG.epoch.eventcondition}));
-%     ind_ems_rej = setdiff(ind_ems, bad);
-%     ind_vis = find(cellfun(@(x) any(strcmp(x, 'visual')), {EEG.epoch.eventcondition}));
-%     ind_vis_rej = setdiff(ind_vis, bad);
-%     ind_vibro = find(cellfun(@(x) any(strcmp(x, 'vibro')), {EEG.epoch.eventcondition}));
-%     ind_vibro_rej = setdiff(ind_vibro, bad);
-%  
-%     % extract each condition data, ALL epochs from complete dataset
-%     % index 1 = ems, 2 = vis, 3 = vibro
-%     ems = pop_selectevent(EEG, 'epoch', ind_ems_rej);
-%     vis = pop_selectevent(EEG, 'epoch', ind_vis_rej);
-%     vibro = pop_selectevent(EEG, 'epoch', ind_vibro_rej);
-%     
-%     % extract condition data from each condition dataset with good epochs
-%     vis_norm = pop_selectevent(vis, 'normal_or_conflict', 'normal');
-%     vis_conf = pop_selectevent(vis, 'normal_or_conflict', 'conflict');
-%     vibro_norm = pop_selectevent(vibro, 'normal_or_conflict', 'normal');
-%     vibro_conf = pop_selectevent(vibro, 'normal_or_conflict', 'conflict');
-% 
-% %     % load 'good' data sets
-% %     vibro_norm = load([input_filepath '\CHI_vibro_norm_trials.mat']);
-% %     vibro_norm = vibro_norm.vibro_norm;
-% %     vibro_conf = load([input_filepath '\CHI_vibro_conf_trials.mat']);
-% %     vibro_conf = vibro_conf.vibro_conf;
-% %     vibro_norm = load([input_filepath '\CHI_vibro_norm_trials.mat']);
-% %     vibro_norm = vibro_norm.vibro_norm;
-% %     vibro_norm = load([input_filepath '\CHI_vibro_norm_trials.mat']);
-% %     vibro_norm = vibro_norm.vibro_norm;
-%     
-%     ems_norm = pop_selectevent(ems, 'normal_or_conflict', 'normal');
-%     ems_conf = pop_selectevent(ems, 'normal_or_conflict', 'conflict');
-%     
-%     % match trial number of vis and vibro condition to EMS
-%     conf_N = length(ems_conf.epoch);
-%     norm_N = length(ems_norm.epoch);
-%     
-%     % randomly select N conf and norm trials from Vis and Vibro conditions
-%     %rand_norm = sort(randsample(1:length(vis_norm.epoch), norm_N));
-%     rand_norm = load([output_filepath '\CHI_rand_norm_trials.mat']);
-%     %rand_conf = sort(randsample(1:length(vis_conf.epoch), conf_N));
-%     rand_conf = load([output_filepath '\CHI_rand_conf']);
-%     rand_conf = rand_conf.rand_conf;
-%    
-%     vis_norm_N = pop_selectevent(vis_norm, 'epoch', rand_norm);
-%     vis_conf_N = pop_selectevent(vis_conf, 'epoch', rand_conf);
-%     vibro_norm_N = pop_selectevent(vibro_norm, 'epoch', rand_norm);
-%     vibro_conf_N = pop_selectevent(vibro_conf, 'epoch', rand_conf);
-%     
-%     % save trial inds for CHI study
-%     %save([output_filepath '\CHI_rand_norm_trials.mat'], 'rand_norm');
+    
+    % remove baseline
+    EEG = pop_rmbase(EEG, baseline);
+    
+    %EEG = pop_eegfiltnew(EEG, low, high);
+
+    % select epochs
+    bad = EEG.etc.auto_epoch_cleaning.indices_bad_epochs;
+    ind_ems = find(cellfun(@(x) any(strcmp(x, 'ems')), {EEG.epoch.eventcondition}));
+    ind_ems_rej = setdiff(ind_ems, bad);
+    ind_vis = find(cellfun(@(x) any(strcmp(x, 'visual')), {EEG.epoch.eventcondition}));
+    ind_vis_rej = setdiff(ind_vis, bad);
+    ind_vibro = find(cellfun(@(x) any(strcmp(x, 'vibro')), {EEG.epoch.eventcondition}));
+    ind_vibro_rej = setdiff(ind_vibro, bad);
+ 
+    % extract each condition data, ALL epochs from complete dataset
+    % index 1 = ems, 2 = vis, 3 = vibro
+    ems = pop_selectevent(EEG, 'epoch', ind_ems_rej);
+    vis = pop_selectevent(EEG, 'epoch', ind_vis_rej);
+    vibro = pop_selectevent(EEG, 'epoch', ind_vibro_rej);
+    
+    % extract condition data from each condition dataset with good epochs
+    vis_norm = pop_selectevent(vis, 'normal_or_conflict', 'normal');
+    vis_conf = pop_selectevent(vis, 'normal_or_conflict', 'conflict');
+    vibro_norm = pop_selectevent(vibro, 'normal_or_conflict', 'normal');
+    vibro_conf = pop_selectevent(vibro, 'normal_or_conflict', 'conflict');
+
+%     % load 'good' data sets
+%     vibro_norm = load([input_filepath '\CHI_vibro_norm_trials.mat']);
+%     vibro_norm = vibro_norm.vibro_norm;
+%     vibro_conf = load([input_filepath '\CHI_vibro_conf_trials.mat']);
+%     vibro_conf = vibro_conf.vibro_conf;
+%     vibro_norm = load([input_filepath '\CHI_vibro_norm_trials.mat']);
+%     vibro_norm = vibro_norm.vibro_norm;
+%     vibro_norm = load([input_filepath '\CHI_vibro_norm_trials.mat']);
+%     vibro_norm = vibro_norm.vibro_norm;
+    
+    ems_norm = pop_selectevent(ems, 'normal_or_conflict', 'normal');
+    ems_conf = pop_selectevent(ems, 'normal_or_conflict', 'conflict');
+    
+    % match trial number of vis and vibro condition to EMS
+    conf_N = length(ems_conf.epoch);
+    norm_N = length(ems_norm.epoch);
+    
+    % randomly select N conf and norm trials from Vis and Vibro conditions
+    %rand_norm = sort(randsample(1:length(vis_norm.epoch), norm_N));
+    rand_norm = load([output_filepath '\CHI_rand_norm_trials.mat']);
+    rand_norm = rand_norm.rand_norm;
+    %rand_conf = sort(randsample(1:length(vis_conf.epoch), conf_N));
+    rand_conf = load([output_filepath '\CHI_rand_conf']);
+    rand_conf = rand_conf.rand_conf;
+   
+    vis_norm_N = pop_selectevent(vis_norm, 'epoch', rand_norm);
+    vis_conf_N = pop_selectevent(vis_conf, 'epoch', rand_conf);
+    vibro_norm_N = pop_selectevent(vibro_norm, 'epoch', rand_norm);
+    vibro_conf_N = pop_selectevent(vibro_conf, 'epoch', rand_conf);
+    
+    % save trial inds for CHI study
+    %save([output_filepath '\CHI_rand_norm_trials.mat'], 'rand_norm');
 %     save([output_filepath '\CHI_rand_conf.mat'], 'rand_conf');
-%     
-%     % extract condition data from each condition dataset with good epochs
-%     normal{subject}{1} = vis_norm_N;
-%     conflict{subject}{1} = vis_conf_N;
-%     normal{subject}{2} = vibro_norm_N;
-%     conflict{subject}{2} = vibro_conf_N;
-%     normal{subject}{3} = ems_norm;
-%     conflict{subject}{3} = ems_conf;
-%     
-%     clear EEG;
+    
+    % extract condition data from each condition dataset with good epochs
+    normal{subject}{1} = vis_norm_N;
+    conflict{subject}{1} = vis_conf_N;
+    normal{subject}{2} = vibro_norm_N;
+    conflict{subject}{2} = vibro_conf_N;
+    normal{subject}{3} = ems_norm;
+    conflict{subject}{3} = ems_conf;
+    
+    clear EEG;
 end
 disp('All files loaded!');
 
@@ -161,12 +162,12 @@ for j = 1:length(chans)
     c = find(strcmp({normal{2}{1}.chanlocs.labels}, chans{j}));
 
     for subject = subjects
-%         conflict{subject}{1}.data(c,:,1) = mean(conflict{subject}{1}.data(c,:,:),3)...
-%             - mean(normal{subject}{1}.data(c,:,:),3);
-%         conflict{subject}{2}.data(c,:,1) = mean(conflict{subject}{2}.data(c,:,:),3)...
-%             - mean(normal{subject}{2}.data(c,:,:),3);
-%         conflict{subject}{3}.data(c,:,1) = mean(conflict{subject}{3}.data(c,:,:),3)...
-%             - mean(normal{subject}{3}.data(c,:,:),3);
+        conflict{subject}{1}.data(c,:,1) = mean(conflict{subject}{1}.data(c,:,:),3)...
+            - mean(normal{subject}{1}.data(c,:,:),3);
+        conflict{subject}{2}.data(c,:,1) = mean(conflict{subject}{2}.data(c,:,:),3)...
+            - mean(normal{subject}{2}.data(c,:,:),3);
+        conflict{subject}{3}.data(c,:,1) = mean(conflict{subject}{3}.data(c,:,:),3)...
+            - mean(normal{subject}{3}.data(c,:,:),3);
 
         diff{subject}{1} = pop_selectevent(conflict{subject}{1}, 'epoch', 1);
         diff{subject}{2} = pop_selectevent(conflict{subject}{2}, 'epoch', 1);

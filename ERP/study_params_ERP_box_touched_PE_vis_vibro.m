@@ -1,5 +1,5 @@
 % set Study parameters for ERPs of event: "box:touched"
-addpath 'P:\Project_Sezen\data_processing\';
+addpath 'P:\Project_Sezen\data_processing';
 study_params_PE_vis_vibro;
 
 % filtering for ERPs
@@ -13,9 +13,8 @@ epochs_event = {'box:touched'};
 
 % filenames and folders
 epochs_filename = 'epochs.set';
-single_subject_analysis_folder_ERPs = 'ERPs\';
 single_subject_analysis_folder_epochs = 'ERP_box_touched';
-study_filename = strcat('predError_ERPs.study');
+study_filename = strcat('predError_', single_subject_analysis_folder_epochs, '.study');
 
 % study parameters
 STUDY_components_to_use = [];
@@ -28,7 +27,7 @@ STUDY_clustering_freqrange = [3 100];
 outlier_sigma = 3;
 STUDY_n_clust = 50;
 n_iterations = 10000;
-STUDY_cluster_ROI_talairach = struct('x', 0, 'y', -34, 'z', 28);
+STUDY_cluster_ROI_talairach = struct('x', 0, 'y', -45, 'z', 10);
 STUDY_quality_measure_weights = [2,-3,-1,-1,-3,-1];
 do_clustering = true;
 do_multivariate_data = true;

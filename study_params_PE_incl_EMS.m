@@ -14,7 +14,7 @@ spatial_filters_folder = '3_spatial_filters\';
 spatial_filters_folder_AMICA = '3-1_AMICA_incl_EMS\';
 single_subject_analysis_folder = '4_single_subject_analysis\';
 single_subject_analysis_folder_ERSPs = 'ERSPs\';
-single_subject_analysis_folder_ERPs = 'ERPs\';
+single_subject_analysis_folder_ERPs = 'ERPs_incl__EMS\';
 single_subject_analysis_folder_ERP_images = 'ERP_images\';
 study_level = '5_study_level\';
 

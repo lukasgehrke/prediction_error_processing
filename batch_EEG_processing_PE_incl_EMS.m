@@ -130,7 +130,8 @@ for subject = subjects
     
     % Compute average reference, after adding additional channel for averef
     %EEG = fullRankAveRef( EEG );
-    EEG = pop_reref( EEG, [1:64] ,'refloc',struct('labels',{'FCz'},'type',{'EEG'},'theta',{0},'radius',{0.12662},'X',{32.9279},'Y',{0},'Z',{78.363},'sph_theta',{0},'sph_phi',{67.208},'sph_radius',{85},'urchan',{65},'ref',{''},'datachan',{0}),'keepref','on');
+    EEG = pop_reref( EEG, [1:64] ,'refloc',struct('labels',{'FCz'},'type',{'EEG'},'theta',{0},'radius',{0.12662},'X',{32.9279},'Y',{0},'Z',...
+        {78.363},'sph_theta',{0},'sph_phi',{67.208},'sph_radius',{85},'urchan',{65},'ref',{''},'datachan',{0}),'keepref','on');
     
     % save dataset
     mkdir(output_filepath); % make sure that folder exists, nothing happens if so

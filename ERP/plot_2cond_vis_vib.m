@@ -22,6 +22,9 @@ for subject = subjects
     EEG = pop_loadset('filename', epochs_filename, 'filepath', input_filepath);
     EEG = eeg_checkset( EEG );
 
+    % remove baseline
+    EEG = pop_rmbase(EEG, baseline);
+    
     % select epochs
     bad = EEG.etc.auto_epoch_cleaning.indices_bad_epochs;
     ind_vis = find(cellfun(@(x) any(strcmp(x, 'visual')), {EEG.epoch.eventcondition}));
@@ -69,7 +72,7 @@ end
 % conflict{subject}{1} = conflict trials visual
 % conflict{subject}{2} = conflict trials vibro
 
-chans = {'Fz' 'Cz' 'Pz' 'Oz'};
+chans = {'Fz' 'Cz' 'Pz' 'Oz' 'FCz'};
 
 % 'standard' ERP plotting
 for i = 1:length(chans)
