@@ -4,6 +4,10 @@ function [ EEG ] = parseEventsPredError( EEG )
 %of the kind "ke1:value1;key2:value2;key3:value3...". This function catches
 %some specifics in the event generation of PredError Experiment Ver1.0 (08/2018)
 
+if isempty(EEG.event)
+    EEG.event = EEG.urevent;
+end
+
 % delete duplicate events in EMS condition
 for i = 1:length(EEG.event)
    if strfind(EEG.event(i).type, 'box:touched')
